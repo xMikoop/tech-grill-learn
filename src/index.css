@@ -13,68 +13,13 @@
   --font-mono: "Fira Code", monospace;
   
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-spin-slow: spin 8s linear infinite;
-  --animate-orbit: orbit 60s linear infinite;
+  --animate-spin-slow: spin 30s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
 }
 
-/* 🌟 Dynamiczny system gwiazd */
-.star-field {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: transparent;
-  z-index: -1;
-}
-
-.star {
-  position: absolute;
-  background: white;
-  border-radius: 50%;
-  opacity: 0.5;
-  animation: star-flicker var(--duration) infinite alternate;
-}
-
-@keyframes star-flicker {
-  from { opacity: 0.2; transform: scale(0.8); }
-  to { opacity: 0.8; transform: scale(1.2); }
-}
-
-/* 🌀 NASA Black Hole Accretion Disk */
-.accretion-disk {
-  position: absolute;
-  width: 300px;
-  height: 80px;
-  background: radial-gradient(ellipse at center, transparent 40%, var(--color-plasma) 70%, #fff 90%);
-  filter: blur(4px);
-  border-radius: 50%;
-  transform: rotateX(75deg) rotateY(10deg);
-  box-shadow: 0 0 50px var(--color-plasma);
-  animation: accretion-spin 4s linear infinite;
-}
-
-@keyframes accretion-spin {
-  from { transform: rotateX(75deg) rotateY(10deg) rotateZ(0deg); }
-  to { transform: rotateX(75deg) rotateY(10deg) rotateZ(360deg); }
-}
-
-/* Grawitacyjne zniekształcenie światła (NASA style) */
-.gravitational-lensing {
-  position: absolute;
-  width: 320px;
-  height: 180px;
-  border: 4px solid var(--color-plasma);
-  border-bottom: 0;
-  border-radius: 50% 50% 0 0;
-  filter: blur(10px);
-  opacity: 0.4;
-  transform: translateY(-40px);
-}
-
-.gravity-wave {
-  position: absolute;
-  border: 1px solid var(--color-plasma);
-  border-radius: 50%;
-  animation: gravity-expand 4s infinite;
-  pointer-events: none;
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-20px) translateX(10px); }
 }
 
 @keyframes gravity-expand {
@@ -82,76 +27,101 @@
   100% { transform: scale(2.5); opacity: 0; }
 }
 
-/* ─── Global Noise Overlay ─── */
-body::before {
-  content: '';
+/* 🌌 Universe System 3D */
+.universe-container {
   position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  inset: -200px;
+  perspective: 2000px;
+  overflow: hidden;
+  z-index: 0;
   pointer-events: none;
-  z-index: 9999;
-  opacity: 0.05;
 }
 
+.universe-camera {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.star-field {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(-1000px) scale(3);
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: star-blink 3s infinite alternate;
+}
+
+@keyframes star-blink { from { opacity: 0.2; } to { opacity: 0.8; } }
+
+/* Celestial Bodies */
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  box-shadow: inset -20px -20px 50px rgba(0,0,0,0.8);
+}
+
+.jovian {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle at 30% 30%, #f3e5ab, #e1ad21 40%, #8b4513 80%);
+  transform: translate3d(60%, -20%, 200px);
+}
+
+.saturn {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle at 30% 30%, #dfd3a3, #b5a642);
+  transform: translate3d(-40%, 40%, -300px);
+}
+
+.saturn-rings {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 400px; height: 80px;
+  border: 20px solid rgba(181, 166, 66, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotateX(80deg);
+}
+
+.sun {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #fff 0%, #ffcc00 30%, #ff6600 60%, transparent 80%);
+  box-shadow: 0 0 200px 80px #ffaa00;
+  transform: translate3d(-80%, -80%, -800px);
+  filter: blur(4px);
+}
+
+.black-hole {
+  position: absolute;
+  transform: translate3d(80%, 70%, -500px);
+}
+
+.black-hole-core {
+  width: 150px; height: 150px;
+  background: #000;
+  border-radius: 50%;
+  box-shadow: 0 0 60px 10px #fff, 0 0 120px 30px var(--color-plasma);
+}
+
+/* UI Overlays */
 body {
   font-family: var(--font-sora);
-  background-color: var(--color-void);
+  background-color: #030303;
   color: var(--color-ghost);
   margin: 0;
-  overflow-x: hidden;
-}
-
-.glass {
-  @apply bg-plasma/5 backdrop-blur-xl border border-plasma/15;
+  overflow: hidden;
 }
 
 .glass-dark {
   @apply bg-void/80 backdrop-blur-2xl border border-white/5;
 }
 
-.magnetic-btn {
-  @apply transition-all duration-300 ease-out;
-}
-
-.magnetic-btn:hover {
-  @apply scale-[1.03] -translate-y-px;
-}
-
-.magnetic-btn:active {
-  @apply scale-[0.97];
-}
-
-.achievement-pop {
-  @apply animate-[achievementPop_4s_ease-out_forwards];
-}
-
-@keyframes achievementPop {
-  0% { opacity: 0; transform: translateX(100%) scale(0.8); }
-  15% { opacity: 1; transform: translateX(0) scale(1.05); }
-  20% { transform: translateX(0) scale(1); }
-  80% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(100%); }
-}
-
-.prose-lesson h3 { @apply text-plasma-light text-lg font-semibold mt-6 mb-2; }
-.prose-lesson p { @apply leading-relaxed text-ghost/70 my-3; }
-.prose-lesson strong { @apply text-ghost font-bold; }
-.prose-lesson code {
-  @apply font-mono text-[0.9em] bg-plasma/10 border border-plasma/20 px-1.5 py-0.5 rounded text-plasma-light;
-}
-
-.prose-lesson pre {
-  @apply bg-void border border-white/10 rounded-2xl p-6 my-6 overflow-x-auto;
-}
-
-.prose-lesson pre code {
-  @apply bg-transparent border-none p-0 text-ghost/90 text-sm;
-}
-
-.quiz-option {
-  @apply transition-all duration-200 cursor-pointer border border-white/10 p-6 rounded-2xl font-bold;
-}
-
-.quiz-option:hover:not(.answered) {
-  @apply border-plasma bg-plasma/10 translate-x-1;
+.shadow-plasma-glow {
+  box-shadow: 0 0 20px rgba(123, 97, 255, 0.2);
 }

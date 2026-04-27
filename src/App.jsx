@@ -9,6 +9,65 @@ import { lessons } from './data';
 import { auth, signInWithGoogle, logout } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
+import gsap from 'gsap';
+
+const Universe3D = ({ active }) => {
+  const cameraRef = useRef(null);
+
+  useEffect(() => {
+    if (!cameraRef.current) return;
+    
+    // Cinematic Camera Movement
+    const tl = gsap.timeline({ repeat: -1, yoyo: true });
+    tl.to(cameraRef.current, {
+      x: -50,
+      y: 30,
+      z: 100,
+      rotationY: 5,
+      rotationX: -2,
+      duration: 15,
+      ease: "sine.inOut"
+    }).to(cameraRef.current, {
+      x: 50,
+      y: -20,
+      z: -50,
+      rotationY: -5,
+      rotationX: 2,
+      duration: 20,
+      ease: "sine.inOut"
+    });
+
+    return () => tl.kill();
+  }, []);
+
+  return (
+    <div className="universe-container">
+      <div ref={cameraRef} className="universe-camera">
+        <StarField />
+        
+        {/* Sun in the deep distance */}
+        <div className="celestial-body sun animate-pulse-slow" />
+
+        {/* Saturn with rings */}
+        <div className="celestial-body saturn animate-float">
+          <div className="saturn-rings" />
+        </div>
+
+        {/* Jupiter (Focal point) */}
+        <div className="planet jovian animate-spin-slow" />
+
+        {/* Distant Black Hole */}
+        <div className="black-hole">
+          <div className="black-hole-core animate-pulse" />
+        </div>
+
+        {/* Earth */}
+        <div className="planet earth" style={{ transform: 'translate3d(-20%, 60%, 400px)' }} />
+      </div>
+    </div>
+  );
+};
+
 const StarField = () => {
   const stars = Array.from({ length: 200 }).map((_, i) => ({
     id: i,
@@ -479,41 +538,10 @@ const App = () => {
         </div>
       )}
 
-      {/* Dynamic Atmosphere Background Elements */}
-      <StarField />
+      {/* Universe 3D Background */}
+      <Universe3D active={!!activeAtmosphere} />
       
-      {activeAtmosphere?.animation === 'satellites' && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="w-64 h-64 planet-jovian rounded-full absolute -top-10 -right-10 animate-spin-slow opacity-60" />
-          <div className="w-2 h-2 bg-plasma/40 rounded-full blur-sm absolute top-1/4 left-1/4 animate-float" />
-          <div className="w-3 h-3 bg-plasma/20 rounded-full blur-md absolute bottom-1/3 right-1/4 animate-float" style={{ animationDelay: '-3s' }} />
-        </div>
-      )}
-
-      {activeAtmosphere?.animation === 'grid' && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="w-32 h-32 planet-earth rounded-full absolute bottom-20 right-20 animate-spin-slow opacity-40" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        </div>
-      )}
-
-      {activeAtmosphere?.animation === 'clouds' && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          {activeAtmosphere.name === 'Ciemna Mgławica' ? (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center scale-150">
-              <div className="gravitational-lensing" />
-              <div className="w-20 h-20 black-hole-core rounded-full z-20" />
-              <div className="accretion-disk z-10" />
-              <div className="w-96 h-96 bg-plasma/10 rounded-full blur-[100px] animate-pulse" />
-            </div>
-          ) : (
-            <>
-              <div className="w-[500px] h-[500px] bg-plasma/10 rounded-full blur-[120px] absolute -top-40 -left-40 animate-pulse-slow" />
-              <div className="w-[400px] h-[400px] bg-plasma/10 rounded-full blur-[100px] absolute -bottom-20 -right-20 animate-pulse-slow" style={{ animationDelay: '-4s' }} />
-            </>
-          )}
-        </div>
-      )}
+      {/* Supernova Effect Overlay */}
       {musicConfig && (
         <audio 
           key={musicConfig.url}
