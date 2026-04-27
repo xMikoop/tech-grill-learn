@@ -168,27 +168,28 @@ const App = () => {
     };
   }, []);
 
-  // Route -> state sync
+  // Route -> state sync (Only on location change or atmosphere change)
   useEffect(() => {
-    const routeState = viewFromPath(location.pathname);
+    const routeState = viewFromPath(location.pathname, !!activeAtmosphere);
     if (!VALID_VIEWS.has(routeState.view)) return;
 
+    // Only update if current state differs from what the route dictates
     if (routeState.view !== view) {
       setView(routeState.view);
     }
 
-    if ((routeState.view === 'lesson' || routeState.view === 'quiz') && routeState.lessonIndex !== null) {
-      if (routeState.lessonIndex !== currentLessonIndex) {
-        setCurrentLessonIndex(routeState.lessonIndex);
-      }
+    if (
+      (routeState.view === 'lesson' || routeState.view === 'quiz') &&
+      routeState.lessonIndex !== null &&
+      routeState.lessonIndex !== currentLessonIndex
+    ) {
+      setCurrentLessonIndex(routeState.lessonIndex);
     }
 
-    if (!isRouteHydrated) {
-      setIsRouteHydrated(true);
-    }
-  }, [location.pathname, view, currentLessonIndex, isRouteHydrated, setCurrentLessonIndex, setView]);
+    setIsRouteHydrated(true);
+  }, [location.pathname, activeAtmosphere, setView, setCurrentLessonIndex]);
 
-  // State -> route sync
+  // State -> route sync (Only on view change)
   useEffect(() => {
     if (!isRouteHydrated) return;
 
@@ -196,7 +197,7 @@ const App = () => {
     if (location.pathname !== targetPath) {
       navigate(targetPath, { replace: true });
     }
-  }, [view, currentLessonIndex, location.pathname, navigate, isRouteHydrated]);
+  }, [view, currentLessonIndex, isRouteHydrated, navigate]);
 
   // Consistency check: if view is lesson/quiz but no lesson is selected, go back to dashboard
   useEffect(() => {

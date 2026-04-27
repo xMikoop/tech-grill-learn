@@ -18,7 +18,8 @@ describe('viewRouting', () => {
     expect(viewFromPath('/dashboard')).toEqual({ view: 'dashboard', lessonIndex: null });
   });
 
-  it('obsługuje nieznane ścieżki fallbackiem do dashboardu', () => {
-    expect(viewFromPath('/nie-istnieje')).toEqual({ view: 'dashboard', lessonIndex: null });
+  it('obsługuje root path w zależności od atmosfery', () => {
+    expect(viewFromPath('/', false)).toEqual({ view: 'onboarding', lessonIndex: null });
+    expect(viewFromPath('/', true)).toEqual({ view: 'dashboard', lessonIndex: null });
   });
 });

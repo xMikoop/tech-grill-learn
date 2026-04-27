@@ -28,12 +28,15 @@ export function pathFromView(view, lessonIndex = null) {
   return STATIC_VIEW_PATHS[view] ?? STATIC_VIEW_PATHS.dashboard;
 }
 
-export function viewFromPath(pathname = '/') {
-  if (pathname === '/' || pathname === '') {
-    return { view: 'onboarding', lessonIndex: null };
+export function viewFromPath(pathname = '/', hasAtmosphere = false) {
+  // Use a consistent normalization for comparison
+  const normalized = pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname;
+
+  if (normalized === '/' || normalized === '') {
+    return { view: hasAtmosphere ? 'dashboard' : 'onboarding', lessonIndex: null };
   }
 
-  const quizMatch = pathname.match(/^\/lesson\/(\d+)\/quiz\/?$/);
+  const quizMatch = normalized.match(/^\/lesson\/(\d+)\/quiz$/);
   if (quizMatch) {
     return {
       view: 'quiz',
@@ -41,7 +44,7 @@ export function viewFromPath(pathname = '/') {
     };
   }
 
-  const lessonMatch = pathname.match(/^\/lesson\/(\d+)\/?$/);
+  const lessonMatch = normalized.match(/^\/lesson\/(\d+)$/);
   if (lessonMatch) {
     return {
       view: 'lesson',
@@ -49,7 +52,6 @@ export function viewFromPath(pathname = '/') {
     };
   }
 
-  const normalized = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   const match = Object.entries(STATIC_VIEW_PATHS).find(([, path]) => path === normalized);
 
   if (match) {
