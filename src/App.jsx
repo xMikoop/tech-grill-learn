@@ -124,9 +124,36 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
   const animationRef = useRef(null);
 
   useEffect(() => {
+    const updateParallax = () => {
+      if (!cameraRef.current) return;
+      const rotY = gsap.getProperty(cameraRef.current, "rotationY") || 0;
+      const rotX = gsap.getProperty(cameraRef.current, "rotationX") || 0;
+      
+      // Matematyka 3D: przesunięcie tekstury względem obrotu kamery (efekt sferyczny)
+      // Używamy radianów dla bardziej precyzyjnych obliczeń (Math.PI)
+      const radY = (rotY * Math.PI) / 180;
+      const radX = (rotX * Math.PI) / 180;
+      
+      const offsetX = Math.sin(radY) * 20;
+      const offsetY = -Math.sin(radX) * 20;
+      
+      const planets = document.querySelectorAll('.planet-surface');
+      planets.forEach(p => {
+        p.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+        // Aktualizacja źródła światła
+        p.parentElement.style.setProperty('--light-x', `${35 + rotY}%`);
+        p.parentElement.style.setProperty('--light-y', `${35 + rotX}%`);
+      });
+      
+      requestAnimationFrame(updateParallax);
+    };
+    const animId = requestAnimationFrame(updateParallax);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  useEffect(() => {
     if (!cameraRef.current || !active) return;
     
-    // Zatrzymujemy poprzednie animacje, ale NIE resetujemy wartości kamery
     if (animationRef.current) animationRef.current.kill();
 
     const targets = {
@@ -144,16 +171,14 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
         rotationX: t.rx, rotationY: t.ry,
         duration: 2.5, 
         ease: "power2.inOut",
-        overwrite: true // Ważne dla płynności
+        overwrite: "auto"
       });
     } else {
-      // Powrót do ruchu jałowego z obecnej pozycji
       animationRef.current = gsap.to(cameraRef.current, {
         rotationY: 8, rotationX: 2, x: 40, z: 50,
         duration: 4, 
         ease: "power2.inOut",
         onComplete: () => {
-          // Gdy wróci do bazy, włącz zapętlony ruch
           animationRef.current = gsap.to(cameraRef.current, {
             rotationY: 12, rotationX: 4, x: 60,
             duration: 25, repeat: -1, yoyo: true, ease: "sine.inOut"
@@ -178,7 +203,9 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
           onClick={(e) => { e.stopPropagation(); onPlanetClick('sun'); }}
           className="sun planet" 
           style={{ top: '5%', left: '5%', transform: 'translateZ(-900px)' }} 
-        />
+        >
+           <div className="planet-surface sun" />
+        </div>
 
         {/* Saturn */}
         <div style={{ position: 'absolute', top: '55%', left: '15%', transform: 'translateZ(-400px)', transformStyle: 'preserve-3d' }}>
@@ -186,6 +213,7 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
             onClick={(e) => { e.stopPropagation(); onPlanetClick('saturn'); }}
             className="planet saturn"
           >
+            <div className="planet-surface saturn" />
             <div className="saturn-rings" />
           </div>
         </div>
@@ -194,8 +222,10 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
         <div style={{ position: 'absolute', top: '25%', right: '10%', transform: 'translateZ(-100px)', transformStyle: 'preserve-3d' }}>
           <div 
             onClick={(e) => { e.stopPropagation(); onPlanetClick('jupiter'); }}
-            className="planet jovian animate-spin-slow" 
-          />
+            className="planet jovian" 
+          >
+             <div className="planet-surface jovian" />
+          </div>
         </div>
 
         {/* Black Hole */}
@@ -211,8 +241,9 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
           <div 
             onClick={(e) => { e.stopPropagation(); onPlanetClick('earth'); }}
             className="planet earth" 
-            style={{ width: '45px', height: '45px', background: 'radial-gradient(circle at 30% 30%, #4b9cd3, #004d99)' }} 
-          />
+          >
+             <div className="planet-surface earth" />
+          </div>
         </div>
       </div>
     </div>
@@ -782,7 +813,7 @@ const App = () => {
 
       {/* SIDEBAR (Inlined to prevent input focus loss) */}
       {view !== 'onboarding' && (
-        <aside className="w-80 bg-void/40 backdrop-blur-xl border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0 relative z-10 pointer-events-none">
+        <aside className="w-80 bg-void/60 backdrop-blur-3xl border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0 relative z-10 pointer-events-none">
           <div className="p-5 border-b border-white/5 flex items-center gap-3 pointer-events-auto">
             <div className="w-10 h-10 rounded-xl overflow-hidden border border-plasma/30 shrink-0 bg-void">
               {authUser?.photoURL ? (

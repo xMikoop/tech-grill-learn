@@ -34,7 +34,7 @@
   inset: 0;
   perspective: 1200px;
   overflow: hidden;
-  z-index: 20; /* Na wierzchu, aby kliknięcia działały */
+  z-index: 1; /* Powrót pod tekst */
   pointer-events: none;
   background: transparent;
   opacity: 0;
@@ -75,8 +75,21 @@
   pointer-events: auto;
   cursor: pointer;
   transition: filter 0.3s ease;
-  /* Efekt sferyczności przez oświetlenie */
-  background-size: 200% 200%;
+  overflow: hidden; /* Do wycinania powierzchni */
+  box-shadow: inset -20px -20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(255,255,255,0.05);
+}
+
+.planet-surface {
+  position: absolute;
+  inset: -20%; /* Większa niż planeta dla efektu paralaksy */
+  border-radius: 50%;
+  background-image: radial-gradient(circle at var(--light-x, 35%) var(--light-y, 35%), var(--p-color-1) 0%, var(--p-color-2) 40%, var(--p-color-3) 80%, #000 100%);
+  transition: transform 0.1s linear;
+}
+
+.planet-surface.sun {
+  inset: 0;
+  background: radial-gradient(circle at center, #fff 0%, #fff 10%, #ffcc00 30%, #ff6600 60%, transparent 80%);
 }
 
 .planet::after {
@@ -84,40 +97,30 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 50%);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 60%);
   pointer-events: none;
+  z-index: 2;
 }
 
 .jovian {
   width: 400px; height: 400px;
-  background: radial-gradient(circle at 35% 35%, #f3e5ab 0%, #e1ad21 40%, #8b4513 80%, #201005 100%);
-  box-shadow: 0 0 60px rgba(225, 173, 33, 0.2), inset -30px -30px 60px rgba(0,0,0,0.9);
+  --p-color-1: #f3e5ab; --p-color-2: #e1ad21; --p-color-3: #8b4513;
 }
 
 .saturn {
   width: 180px; height: 180px;
-  background: radial-gradient(circle at 35% 35%, #dfd3a3 0%, #b5a642 50%, #4a452a 100%);
-  box-shadow: 0 0 40px rgba(181, 166, 66, 0.2), inset -15px -15px 40px rgba(0,0,0,0.9);
-}
-
-.saturn-rings {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 450px; height: 90px;
-  border: 25px solid rgba(181, 166, 66, 0.15);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) rotateX(75deg);
-  box-shadow: 0 0 30px rgba(181, 166, 66, 0.1);
+  --p-color-1: #dfd3a3; --p-color-2: #b5a642; --p-color-3: #4a452a;
 }
 
 .sun {
   width: 600px; height: 600px;
-  background: radial-gradient(circle at center, #fff 0%, #fff 5%, #ffcc00 20%, #ff6600 50%, transparent 75%);
-  box-shadow: 0 0 200px 80px #ffaa00, inset 0 0 100px #fff;
+  background: radial-gradient(circle at center, #fff 0%, #fff 10%, #ffcc00 30%, #ff6600 60%, transparent 80%);
+  box-shadow: 0 0 200px 80px #ffaa00;
 }
 
 .earth {
-  box-shadow: 0 0 30px rgba(75, 156, 211, 0.3), inset -10px -10px 30px rgba(0,0,0,0.8);
+  width: 50px; height: 50px;
+  --p-color-1: #4b9cd3; --p-color-2: #004d99; --p-color-3: #001a33;
 }
 
 .black-hole-core {
@@ -160,8 +163,17 @@ body {
   overflow: hidden;
 }
 
+.glass {
+  background: rgba(10, 10, 20, 0.9);
+  backdrop-blur: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
 .glass-dark {
-  @apply bg-void/80 backdrop-blur-2xl border border-white/5;
+  background: rgba(5, 5, 10, 0.95);
+  backdrop-blur: 30px;
+  border: 1px solid rgba(123, 97, 255, 0.2);
 }
 
 .shadow-plasma-glow {
