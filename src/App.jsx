@@ -168,11 +168,16 @@ const App = () => {
     };
   }, []);
 
-  // Route -> state sync (Only on location change or atmosphere change)
+  // Flaga blokująca pętlę między efektami route↔state
+  const isSyncingRef = useRef(false);
+
+  // Route -> state sync (Only on location change)
   useEffect(() => {
+    if (isSyncingRef.current) return;
     const routeState = viewFromPath(location.pathname, !!activeAtmosphere);
     if (!VALID_VIEWS.has(routeState.view)) return;
 
+    isSyncingRef.current = true;
     // Only update if current state differs from what the route dictates
     if (routeState.view !== view) {
       setView(routeState.view);
@@ -187,15 +192,21 @@ const App = () => {
     }
 
     setIsRouteHydrated(true);
-  }, [location.pathname, activeAtmosphere, setView, setCurrentLessonIndex]);
+    // Reset flagi po mikrotasku, nie synchronicznie
+    Promise.resolve().then(() => { isSyncingRef.current = false; });
+  // activeAtmosphere celowo pominięte - nie powinno wyzwalać route sync
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   // State -> route sync (Only on view change)
   useEffect(() => {
-    if (!isRouteHydrated) return;
+    if (!isRouteHydrated || isSyncingRef.current) return;
 
     const targetPath = pathFromView(view, currentLessonIndex);
     if (location.pathname !== targetPath) {
+      isSyncingRef.current = true;
       navigate(targetPath, { replace: true });
+      Promise.resolve().then(() => { isSyncingRef.current = false; });
     }
   }, [view, currentLessonIndex, isRouteHydrated, navigate]);
 
