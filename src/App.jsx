@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Zap, Shield, Clock, Terminal, CheckCircle, ChevronRight, Trophy, ArrowLeft, Database, Brain, Workflow, Rocket, Music, Play, Pause, Volume2, VolumeX, Loader2, Send, MessageSquare, BookOpen, Star, History, LayoutDashboard, LogOut } from 'lucide-react';
+import { Zap, Shield, Clock, Terminal, CheckCircle, ChevronRight, Trophy, ArrowLeft, Database, Brain, Workflow, Rocket, Music, Play, Pause, Volume2, VolumeX, Loader2, Send, MessageSquare, BookOpen, Star, History, LayoutDashboard, LogOut, Lock, Unlock } from 'lucide-react';
 import { lessons } from './data';
 import { auth, signInWithGoogle, logout } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -61,6 +61,13 @@ const App = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  // Consistency check: if view is lesson/quiz but no lesson is selected, go back to dashboard
+  useEffect(() => {
+    if ((view === 'lesson' || view === 'quiz') && currentLessonIndex === null) {
+      setView('dashboard');
+    }
+  }, [view, currentLessonIndex]);
 
   useEffect(() => {
     localStorage.setItem('tg_view', view);

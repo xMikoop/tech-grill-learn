@@ -82,7 +82,15 @@ body {
 .prose-lesson p { @apply leading-relaxed text-ghost/70 my-3; }
 .prose-lesson strong { @apply text-ghost font-bold; }
 .prose-lesson code {
-  @apply font-mono text-[0.8em] bg-plasma/15 border border-plasma/25 px-1 py-0.5 rounded text-plasma-light;
+  @apply font-mono text-[0.9em] bg-plasma/10 border border-plasma/20 px-1.5 py-0.5 rounded text-plasma-light;
+}
+
+.prose-lesson pre {
+  @apply bg-void border border-white/10 rounded-2xl p-6 my-6 overflow-x-auto;
+}
+
+.prose-lesson pre code {
+  @apply bg-transparent border-none p-0 text-ghost/90 text-sm;
 }
 
 .quiz-option {
