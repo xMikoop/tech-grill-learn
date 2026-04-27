@@ -28,14 +28,23 @@ const App = () => {
   const [savedLinks, setSavedLinks] = useState([]);
   const [linkInput, setLinkInput] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
+  const [showSupernova, setShowSupernova] = useState(false);
 
   // Auth state — Firebase manages session automatically
   const [authUser, setAuthUser] = useState(null); // null = loading, false = not logged in, object = logged in
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
 
-  // Onboarding & Music state
-  const [obForm, setObForm] = useState({ calm: '', energy: '', joy: '' });
+  // Onboarding & Profile state
+  const [obForm, setObForm] = useState({ 
+    mood: '', 
+    neuroProfile: 'neurotypical', 
+    interests: '',
+    calm: '', 
+    energy: '', 
+    joy: '' 
+  });
+  const [activeAtmosphere, setActiveAtmosphere] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const [musicConfig, setMusicConfig] = useState(() => {
@@ -89,6 +98,15 @@ const App = () => {
     }
   }, [musicConfig]);
 
+  // Trigger Supernova on correct answer
+  useEffect(() => {
+    if (currentLesson && answers[currentQuizIndex] === currentLesson.quizzes[currentQuizIndex].correct) {
+      setShowSupernova(true);
+      const timer = setTimeout(() => setShowSupernova(false), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [answers, currentQuizIndex, currentLesson]);
+
   const addXp = (amount, achievement) => {
     setXp(prev => prev + amount);
     if (achievement) {
@@ -113,25 +131,55 @@ const App = () => {
     lofi: { title: 'SomaFM The Trip (Lofi)', url: 'https://ice1.somafm.com/thetrip-128-mp3' }
   };
 
-  const getStreamByText = (text) => {
-    if (text.includes('metal') || text.includes('rock') || text.includes('gitar') || text.includes('ciężk')) return streams.metal;
-    if (text.includes('techno') || text.includes('elektr') || text.includes('synth') || text.includes('cyber')) return streams.synth;
-    if (text.includes('hip hop') || text.includes('rap') || text.includes('lofi') || text.includes('chill') || text.includes('spok')) return streams.lofi;
-    return streams.ambient;
+  const atmospheres = {
+    space_adhd: {
+      name: 'Stabilna Orbita',
+      bg: 'radial-gradient(circle at center, #0A0A14 0%, #1A1A2E 100%)',
+      accent: '#7B61FF',
+      animation: 'satellites',
+      music: 'lofi',
+      why: 'Dla osoby z ADHD delikatny ruch obiektów satelitarnych zaspokaja potrzebę stymulacji wizualnej, pozwalając skupić główną uwagę na nauce.'
+    },
+    nature_calm: {
+      name: 'Leśna Cisza',
+      bg: 'radial-gradient(circle at center, #051605 0%, #0A0A14 100%)',
+      accent: '#39FF14',
+      animation: 'clouds',
+      music: 'ambient',
+      why: 'Organiczne barwy i powolne ruchy redukują poziom kortyzolu, co sprzyja głębokiej koncentracji u osób potrzebujących wyciszenia.'
+    },
+    tech_motivated: {
+      name: 'Cyber-Flow',
+      bg: 'radial-gradient(circle at center, #0A0A14 0%, #001220 100%)',
+      accent: '#00E5FF',
+      animation: 'grid',
+      music: 'synth',
+      why: 'Wysoki kontrast i dynamiczne linie siatki stymulują dopaminę, wspierając stan "Flow" podczas intensywnej nauki.'
+    }
   };
 
   const analyzeProfile = async () => {
     setIsAnalyzing(true);
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 2500));
     
-    const text = (obForm.calm + ' ' + obForm.energy + ' ' + obForm.joy).toLowerCase();
-    const config = getStreamByText(text);
+    let profileKey = 'tech_motivated'; // Default
+    if (obForm.interests === 'Kosmos' && obForm.neuroProfile === 'adhd') profileKey = 'space_adhd';
+    if (obForm.neuroProfile === 'calm_needed' || obForm.neuroProfile === 'hsp') profileKey = 'nature_calm';
 
-    setMusicConfig(config);
+    const selectedAtmos = atmospheres[profileKey];
+    setActiveAtmosphere(selectedAtmos);
+    setMusicConfig(streams[selectedAtmos.music]);
+    
     setIsAnalyzing(false);
     setView('dashboard');
     setIsPlaying(true);
-    addXp(100, 'Zainicjowano profil AI');
+    
+    setChatHistory(prev => [...prev, { 
+      role: 'assistant', 
+      text: `Zainicjowano profil: ${selectedAtmos.name}.\n\nDlaczego to działa: ${selectedAtmos.why}` 
+    }]);
+
+    addXp(150, 'Atmosfera Dostrojona');
   };
 
   useEffect(() => {
@@ -322,9 +370,34 @@ const App = () => {
   }
 
   return (
-    <div className="flex h-screen bg-void text-ghost font-sora selection:bg-plasma selection:text-white overflow-hidden">
-      
-      {/* HTML5 Audio Player */}
+    <div 
+      className="flex h-screen bg-void text-ghost font-sora selection:bg-plasma selection:text-white overflow-hidden transition-all duration-1000"
+      style={{ 
+        background: activeAtmosphere ? activeAtmosphere.bg : 'var(--color-void)',
+        '--color-plasma': activeAtmosphere ? activeAtmosphere.accent : '#7B61FF'
+      }}
+    >
+      {/* Supernova Effect Overlay */}
+      {showSupernova && (
+        <div className="fixed inset-0 z-[1000] pointer-events-none flex items-center justify-center">
+          <div className="supernova-core w-1 h-1 bg-white rounded-full shadow-[0_0_100px_50px_#fff,0_0_200px_100px_var(--color-plasma)] animate-ping" />
+        </div>
+      )}
+
+      {/* Dynamic Atmosphere Background Elements */}
+      {activeAtmosphere?.animation === 'satellites' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="satellite-1 w-2 h-2 bg-plasma/40 rounded-full blur-sm absolute top-1/4 left-1/4 animate-float" />
+          <div className="satellite-2 w-3 h-3 bg-plasma/20 rounded-full blur-md absolute bottom-1/3 right-1/4 animate-float" style={{ animationDelay: '-3s' }} />
+        </div>
+      )}
+
+      {activeAtmosphere?.animation === 'clouds' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-30">
+          <div className="w-[500px] h-[500px] bg-green-neon/5 rounded-full blur-[120px] absolute -top-40 -left-40 animate-pulse-slow" />
+          <div className="w-[400px] h-[400px] bg-green-neon/5 rounded-full blur-[100px] absolute -bottom-20 -right-20 animate-pulse-slow" style={{ animationDelay: '-4s' }} />
+        </div>
+      )}
       {musicConfig && (
         <audio 
           key={musicConfig.url}
@@ -495,56 +568,83 @@ const App = () => {
                 <Brain className="w-8 h-8 text-plasma" />
               </div>
               
-              <h1 className="text-3xl md:text-4xl font-bold text-center mb-4">Inicjalizacja Profilu</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-center mb-4">Dostrojenie Kognitywne</h1>
               <p className="text-graphite text-center mb-10 text-lg">
-                Jestem Twoim cyfrowym mentorem. Zanim zaczniemy, muszę dostroić środowisko edukacyjne do Twoich częstotliwości kognitywnych.
+                Jako Twój Cyfrowy Mentor, muszę spersonalizować atmosferę Twojej nauki.
               </p>
 
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-bold tracking-widest text-plasma mb-2 uppercase">1. Co Cię uspokaja?</label>
-                  <input 
-                    type="text" 
-                    placeholder="np. Klasyka, Szum deszczu, Ambient..."
-                    className="w-full bg-void border border-white/10 rounded-xl px-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
-                    value={obForm.calm}
-                    onChange={e => setObForm({...obForm, calm: e.target.value})}
-                  />
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest text-plasma mb-3 uppercase">Twój dzisiejszy nastrój</label>
+                    <select 
+                      className="w-full bg-void border border-white/10 rounded-xl px-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
+                      value={obForm.mood}
+                      onChange={e => setObForm({...obForm, mood: e.target.value})}
+                    >
+                      <option value="">Wybierz...</option>
+                      <option value="motivated">Zmotywowany</option>
+                      <option value="fatigued">Zmęczony</option>
+                      <option value="stressed">Zestresowany</option>
+                      <option value="joyful">Radosny</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest text-plasma mb-3 uppercase">Profil Poznawczy</label>
+                    <select 
+                      className="w-full bg-void border border-white/10 rounded-xl px-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
+                      value={obForm.neuroProfile}
+                      onChange={e => setObForm({...obForm, neuroProfile: e.target.value})}
+                    >
+                      <option value="neurotypical">Neurotypowy</option>
+                      <option value="adhd">ADHD / Rozproszenie</option>
+                      <option value="hsp">Wysoka Wrażliwość</option>
+                      <option value="calm_needed">Potrzeba Wyciszenia</option>
+                    </select>
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-bold tracking-widest text-plasma mb-2 uppercase">2. Co daje Ci energię?</label>
-                  <input 
-                    type="text" 
-                    placeholder="np. Techno, Metal, Synthwave..."
-                    className="w-full bg-void border border-white/10 rounded-xl px-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
-                    value={obForm.energy}
-                    onChange={e => setObForm({...obForm, energy: e.target.value})}
-                  />
+                  <label className="block text-xs font-bold tracking-widest text-plasma mb-3 uppercase">Twoje Pasje (Temat Atmosfery)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {['Kosmos', 'Natura', 'Technologia', 'Cyberpunk', 'Minimalizm'].map(interest => (
+                      <button
+                        key={interest}
+                        onClick={() => setObForm({...obForm, interests: interest})}
+                        className={`px-4 py-2 rounded-full border text-xs font-bold transition-all ${obForm.interests === interest ? 'bg-plasma border-plasma text-void' : 'border-white/10 text-ghost/50 hover:border-plasma/50'}`}
+                      >
+                        {interest}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold tracking-widest text-plasma mb-2 uppercase">3. Co sprawia Ci największą radość?</label>
-                  <input 
-                    type="text" 
-                    placeholder="np. Programowanie nocą, Koty, Gry retro..."
-                    className="w-full bg-void border border-white/10 rounded-xl px-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
-                    value={obForm.joy}
-                    onChange={e => setObForm({...obForm, joy: e.target.value})}
-                  />
+
+                <div className="pt-6 border-t border-white/5 space-y-6">
+                   <div>
+                    <label className="block text-xs font-bold tracking-widest text-plasma mb-2 uppercase">Co Cię teraz najbardziej uspokaja?</label>
+                    <input 
+                      type="text" 
+                      placeholder="np. Szum deszczu, Cisza..."
+                      className="w-full bg-void border border-white/10 rounded-xl px-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
+                      value={obForm.calm}
+                      onChange={e => setObForm({...obForm, calm: e.target.value})}
+                    />
+                  </div>
                 </div>
 
                 <button 
                   onClick={analyzeProfile}
-                  disabled={isAnalyzing || !obForm.calm || !obForm.energy || !obForm.joy}
+                  disabled={isAnalyzing || !obForm.mood || !obForm.interests || !obForm.calm}
                   className="w-full mt-8 bg-plasma text-void font-bold py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-plasmaLight transition-all magnetic-btn disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      ANALIZOWANIE WZORCÓW PRZEZ AI...
+                      GENEROWANIE PROFILU ATMOSFERY...
                     </>
                   ) : (
                     <>
-                      DOSTRÓJ ŚRODOWISKO <ChevronRight className="w-5 h-5" />
+                      ZAINICJUJ ŚRODOWISKO <ChevronRight className="w-5 h-5" />
                     </>
                   )}
                 </button>
