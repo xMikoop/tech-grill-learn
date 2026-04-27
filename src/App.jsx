@@ -11,6 +11,14 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 import gsap from 'gsap';
 
+const CELESTIAL_INFO = {
+  sun: { name: 'Słońce', age: '4.6 mld lat', comp: 'Wodór (73%), Hel (25%)', fact: 'Masa Słońca to 99.86% masy całego Układu Słonecznego.', life: 'Ok. 5 mld lat do fazy Czerwonego Olbrzyma.' },
+  saturn: { name: 'Saturn', age: '4.5 mld lat', comp: 'Wodór, Hel', fact: 'Gęstość Saturna jest mniejsza od gęstości wody – mógłby pływać w ogromnym basenie.', life: 'Stabilna przez miliardy lat.' },
+  jupiter: { name: 'Jowisz', age: '4.5 mld lat', comp: 'Głównie Wodór i Hel (Gazowy Gigant)', fact: 'Wielka Czerwona Plama to antycyklon wiejący od co najmniej 350 lat.', life: 'Stabilna przez miliardy lat.' },
+  earth: { name: 'Ziemia', age: '4.54 mld lat', comp: 'Żelazo, Tlen, Krzem, Magnez', fact: 'Jedyna planeta w Układzie Słonecznym, która nie ma nazwy pochodzącej od rzymskiego lub greckiego bóstwa.', life: 'Ok. 1-2 mld lat (zanim Słońce stanie się zbyt gorące).' },
+  black_hole: { name: 'Czarna Dziura', age: 'Różny', comp: 'Zapadnięta Masa (Osobliwość)', fact: 'Czas zwalnia w pobliżu czarnej dziury z powodu ogromnej grawitacji (dylatacja czasu).', life: 'Paruje przez miliardy lat (Promieniowanie Hawkinga).' }
+};
+
 // Stałe pozycje gwiazd generowane raz poza komponentem, aby uniknąć skakania przy re-renderach
 const STATIC_STARS = Array.from({ length: 200 }).map((_, i) => ({
   id: i,
@@ -111,18 +119,43 @@ const SpaceShip = React.memo(() => {
   );
 });
 
-const Universe3D = React.memo(({ active }) => {
+const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
   const cameraRef = useRef(null);
+  const animationRef = useRef(null);
+
   useEffect(() => {
     if (!cameraRef.current || !active) return;
+    
+    if (animationRef.current) animationRef.current.kill();
+
     const ctx = gsap.context(() => {
-      gsap.to(cameraRef.current, {
-        rotationY: 8, rotationX: 2, x: 40, z: 50,
-        duration: 25, repeat: -1, yoyo: true, ease: "sine.inOut"
-      });
+      if (focusedPlanet) {
+        // Przybliżenie do konkretnego obiektu
+        const targets = {
+          sun: { x: 400, y: 300, z: -400, rx: -10, ry: -10 },
+          saturn: { x: 300, y: -200, z: 0, rx: 5, ry: 15 },
+          jupiter: { x: -400, y: 100, z: 300, rx: 0, ry: -20 },
+          black_hole: { x: -400, y: -400, z: -100, rx: 20, ry: -10 },
+          earth: { x: 0, y: -400, z: 700, rx: 15, ry: 0 }
+        };
+
+        const t = targets[focusedPlanet];
+        gsap.to(cameraRef.current, {
+          x: t.x, y: t.y, z: t.z,
+          rotationX: t.rx, rotationY: t.ry,
+          duration: 2, ease: "power3.inOut"
+        });
+      } else {
+        // Standardowy ruch jałowy
+        animationRef.current = gsap.to(cameraRef.current, {
+          rotationY: 8, rotationX: 2, x: 40, z: 50,
+          duration: 25, repeat: -1, yoyo: true, ease: "sine.inOut"
+        });
+      }
     });
+
     return () => ctx.revert();
-  }, [active]);
+  }, [active, focusedPlanet]);
 
   return (
     <div className={`universe-container ${active ? 'active' : ''}`}>
@@ -131,26 +164,45 @@ const Universe3D = React.memo(({ active }) => {
         <SpaceShip />
         
         {/* Sun */}
-        <div className="sun planet" style={{ top: '5%', left: '5%', transform: 'translateZ(-900px)' }} />
+        <div 
+          onClick={(e) => { e.stopPropagation(); onPlanetClick('sun'); }}
+          className="sun planet" 
+          style={{ top: '5%', left: '5%', transform: 'translateZ(-900px)' }} 
+        />
 
         {/* Saturn */}
         <div style={{ position: 'absolute', top: '55%', left: '15%', transform: 'translateZ(-400px)', transformStyle: 'preserve-3d' }}>
-          <div className="planet saturn"><div className="saturn-rings" /></div>
+          <div 
+            onClick={(e) => { e.stopPropagation(); onPlanetClick('saturn'); }}
+            className="planet saturn"
+          >
+            <div className="saturn-rings" />
+          </div>
         </div>
 
         {/* Jupiter */}
         <div style={{ position: 'absolute', top: '25%', right: '10%', transform: 'translateZ(-100px)', transformStyle: 'preserve-3d' }}>
-          <div className="planet jovian animate-spin-slow" />
+          <div 
+            onClick={(e) => { e.stopPropagation(); onPlanetClick('jupiter'); }}
+            className="planet jovian animate-spin-slow" 
+          />
         </div>
 
         {/* Black Hole */}
         <div style={{ position: 'absolute', bottom: '10%', right: '5%', transform: 'translateZ(-600px)', transformStyle: 'preserve-3d' }}>
-          <div className="black-hole-core" />
+          <div 
+            onClick={(e) => { e.stopPropagation(); onPlanetClick('black_hole'); }}
+            className="black-hole-core pointer-events-auto cursor-pointer" 
+          />
         </div>
 
         {/* Earth */}
         <div style={{ position: 'absolute', bottom: '15%', left: '40%', transform: 'translateZ(300px)', transformStyle: 'preserve-3d' }}>
-          <div className="planet earth" style={{ width: '45px', height: '45px', background: 'radial-gradient(circle at 30% 30%, #4b9cd3, #004d99)' }} />
+          <div 
+            onClick={(e) => { e.stopPropagation(); onPlanetClick('earth'); }}
+            className="planet earth" 
+            style={{ width: '45px', height: '45px', background: 'radial-gradient(circle at 30% 30%, #4b9cd3, #004d99)' }} 
+          />
         </div>
       </div>
     </div>
@@ -221,6 +273,8 @@ const App = () => {
   ]);
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef(null);
+
+  const [focusedPlanet, setFocusedPlanet] = useState(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -586,11 +640,12 @@ const App = () => {
 
   return (
     <div 
-      className="flex h-screen bg-void text-ghost font-sora selection:bg-plasma selection:text-white overflow-hidden transition-all duration-1000"
+      className="flex h-screen bg-void text-ghost font-sora selection:bg-plasma selection:text-white overflow-hidden transition-all duration-1000 relative"
       style={{ 
         background: activeAtmosphere ? activeAtmosphere.bg : 'var(--color-void)',
         '--color-plasma': activeAtmosphere ? activeAtmosphere.accent : '#7B61FF'
       }}
+      onClick={() => setFocusedPlanet(null)}
     >
       {/* Supernova Effect Overlay */}
       {showSupernova && (
@@ -600,7 +655,56 @@ const App = () => {
       )}
 
       {/* Universe 3D Background */}
-      <Universe3D active={true} />
+      <Universe3D active={true} onPlanetClick={setFocusedPlanet} focusedPlanet={focusedPlanet} />
+
+      {/* Planet Info Panel */}
+      {focusedPlanet && CELESTIAL_INFO[focusedPlanet] && (
+        <div 
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[10000] w-full max-w-md animate-slide-up"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="glass-dark p-8 rounded-[2.5rem] border border-plasma/50 shadow-plasma-glow relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-4">
+                <button onClick={() => setFocusedPlanet(null)} className="text-white/30 hover:text-white transition-colors">
+                   <Zap className="w-5 h-5 rotate-45" />
+                </button>
+             </div>
+             
+             <div className="text-plasma text-xs font-black tracking-[0.3em] uppercase mb-2">Celestial Object</div>
+             <h2 className="text-5xl font-serif italic mb-6">{CELESTIAL_INFO[focusedPlanet].name}</h2>
+             
+             <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <div className="text-[10px] text-plasma font-bold uppercase mb-1">Wiek</div>
+                      <div className="font-bold">{CELESTIAL_INFO[focusedPlanet].age}</div>
+                   </div>
+                   <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <div className="text-[10px] text-plasma font-bold uppercase mb-1">Skład</div>
+                      <div className="font-bold text-xs">{CELESTIAL_INFO[focusedPlanet].comp}</div>
+                   </div>
+                </div>
+                
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                   <div className="text-[10px] text-plasma font-bold uppercase mb-1">Ciekawostka</div>
+                   <div className="text-sm leading-relaxed">{CELESTIAL_INFO[focusedPlanet].fact}</div>
+                </div>
+
+                <div className="p-4 bg-plasma/10 rounded-2xl border border-plasma/20">
+                   <div className="text-[10px] text-plasma font-bold uppercase mb-1">Przewidywana długość życia</div>
+                   <div className="text-sm font-medium">{CELESTIAL_INFO[focusedPlanet].life}</div>
+                </div>
+             </div>
+
+             <button 
+               onClick={() => setFocusedPlanet(null)}
+               className="w-full mt-8 bg-white text-void font-bold py-4 rounded-xl hover:bg-plasma hover:text-white transition-all uppercase tracking-widest text-xs"
+             >
+               Powrót do eksploracji
+             </button>
+          </div>
+        </div>
+      )}
       
       {/* Supernova Effect Overlay */}
       {musicConfig && (
