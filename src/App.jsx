@@ -122,14 +122,6 @@ const App = () => {
     }
   }, [musicConfig]);
 
-  // Trigger Supernova on correct answer
-  useEffect(() => {
-    if (currentLesson && answers[currentQuizIndex] === currentLesson.quizzes[currentQuizIndex].correct) {
-      setShowSupernova(true);
-      const timer = setTimeout(() => setShowSupernova(false), 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [answers, currentQuizIndex, currentLesson]);
 
   const addXp = (amount, achievement) => {
     setXp(prev => prev + amount);
@@ -179,7 +171,23 @@ const App = () => {
       animation: 'grid',
       music: 'synth',
       why: 'Wysoki kontrast i dynamiczne linie siatki stymulują dopaminę, wspierając stan "Flow" podczas intensywnej nauki.'
+    },
+    space_stressed: {
+      name: 'Ciemna Mgławica',
+      bg: 'radial-gradient(circle at center, #0A0A14 0%, #0D0D2B 100%)',
+      accent: '#A594FF',
+      animation: 'clouds',
+      music: 'ambient',
+      why: 'Wolno pulsujące mgławice w ciemnym odcieniu granatu obniżają napięcie nerwowe i sprzyjają skupieniu u osób w stanie stresu.'
     }
+  };
+
+  // Helper for chatbot music commands
+  const getStreamByText = (text) => {
+    if (text.includes('metal') || text.includes('rock') || text.includes('gitar') || text.includes('ciężk')) return streams.metal;
+    if (text.includes('techno') || text.includes('elektr') || text.includes('synth') || text.includes('cyber')) return streams.synth;
+    if (text.includes('hip hop') || text.includes('rap') || text.includes('lofi') || text.includes('chill') || text.includes('spok')) return streams.lofi;
+    return streams.ambient;
   };
 
   const analyzeProfile = async () => {
@@ -187,8 +195,21 @@ const App = () => {
     await new Promise(r => setTimeout(r, 2500));
     
     let profileKey = 'tech_motivated'; // Default
-    if (obForm.interests === 'Kosmos' && obForm.neuroProfile === 'adhd') profileKey = 'space_adhd';
-    if (obForm.neuroProfile === 'calm_needed' || obForm.neuroProfile === 'hsp') profileKey = 'nature_calm';
+    
+    // Priority-based matching
+    if (obForm.neuroProfile === 'calm_needed' || obForm.neuroProfile === 'hsp') {
+      profileKey = 'nature_calm';
+    } else if (obForm.neuroProfile === 'adhd') {
+      profileKey = obForm.interests === 'Kosmos' ? 'space_adhd' : 'space_adhd'; // ADHD always gets subtle motion
+    } else if (obForm.mood === 'stressed') {
+      profileKey = 'space_stressed';
+    } else if (obForm.interests === 'Cyberpunk' || obForm.interests === 'Technologia') {
+      profileKey = 'tech_motivated';
+    } else if (obForm.interests === 'Natura' || obForm.interests === 'Minimalizm') {
+      profileKey = 'nature_calm';
+    } else if (obForm.interests === 'Kosmos') {
+      profileKey = obForm.mood === 'fatigued' ? 'space_stressed' : 'space_adhd';
+    }
 
     const selectedAtmos = atmospheres[profileKey];
     setActiveAtmosphere(selectedAtmos);
@@ -304,6 +325,17 @@ const App = () => {
 
   const currentLesson = currentLessonIndex !== null ? lessons[currentLessonIndex] : null;
   const isLessonCompleted = currentLesson && Object.keys(unlockedConcepts).length === currentLesson.concepts.length;
+
+  // Trigger Supernova on correct answer
+  useEffect(() => {
+    if (!currentLesson || Object.keys(answers).length === 0) return;
+    const quiz = currentLesson.quizzes?.[currentQuizIndex];
+    if (quiz && answers[currentQuizIndex] === quiz.correct) {
+      setShowSupernova(true);
+      const timer = setTimeout(() => setShowSupernova(false), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [answers, currentQuizIndex, currentLesson]);
 
   const renderIcon = (iconName, className) => {
     switch(iconName) {
