@@ -9,6 +9,34 @@ import { lessons } from './data';
 import { auth, signInWithGoogle, logout } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
+const StarField = () => {
+  const stars = Array.from({ length: 200 }).map((_, i) => ({
+    id: i,
+    top: `${Math.random() * 100}%`,
+    left: `${Math.random() * 100}%`,
+    size: `${Math.random() * 2 + 1}px`,
+    duration: `${Math.random() * 3 + 2}s`,
+  }));
+
+  return (
+    <div className="star-field pointer-events-none">
+      {stars.map(star => (
+        <div 
+          key={star.id} 
+          className="star" 
+          style={{ 
+            top: star.top, 
+            left: star.left, 
+            width: star.size, 
+            height: star.size, 
+            '--duration': star.duration 
+          }} 
+        />
+      ))}
+    </div>
+  );
+};
+
 const App = () => {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
   const [xp, setXp] = useState(() => {
@@ -452,12 +480,13 @@ const App = () => {
       )}
 
       {/* Dynamic Atmosphere Background Elements */}
+      <StarField />
+      
       {activeAtmosphere?.animation === 'satellites' && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
           <div className="w-64 h-64 planet-jovian rounded-full absolute -top-10 -right-10 animate-spin-slow opacity-60" />
           <div className="w-2 h-2 bg-plasma/40 rounded-full blur-sm absolute top-1/4 left-1/4 animate-float" />
           <div className="w-3 h-3 bg-plasma/20 rounded-full blur-md absolute bottom-1/3 right-1/4 animate-float" style={{ animationDelay: '-3s' }} />
-          <div className="gravity-wave w-96 h-96 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
         </div>
       )}
 
@@ -471,10 +500,11 @@ const App = () => {
       {activeAtmosphere?.animation === 'clouds' && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
           {activeAtmosphere.name === 'Ciemna Mgławica' ? (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-              <div className="w-32 h-32 black-hole-core rounded-full z-10" />
-              <div className="w-48 h-48 event-horizon rounded-full absolute animate-spin-slow opacity-30" />
-              <div className="w-64 h-64 border border-white/5 rounded-full absolute animate-pulse-glow" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center scale-150">
+              <div className="gravitational-lensing" />
+              <div className="w-20 h-20 black-hole-core rounded-full z-20" />
+              <div className="accretion-disk z-10" />
+              <div className="w-96 h-96 bg-plasma/10 rounded-full blur-[100px] animate-pulse" />
             </div>
           ) : (
             <>
