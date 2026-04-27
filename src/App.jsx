@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Zap, Shield, Clock, Terminal, CheckCircle, ChevronRight, Trophy, ArrowLeft, Database, Brain, Workflow, Rocket, Music, Play, Pause, Volume2, VolumeX, Loader2, Send, MessageSquare, BookOpen, Star, History, LayoutDashboard, LogOut, Lock, Unlock } from 'lucide-react';
+import { 
+  Zap, Shield, Clock, Terminal, CheckCircle, ChevronRight, Trophy, ArrowLeft, 
+  Database, Brain, Workflow, Rocket, Music, Play, Pause, Volume2, VolumeX, 
+  Loader2, Send, MessageSquare, BookOpen, Star, History, LayoutDashboard, 
+  LogOut, Lock, Unlock 
+} from 'lucide-react';
 import { lessons } from './data';
 import { auth, signInWithGoogle, logout } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
