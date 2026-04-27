@@ -40,6 +40,61 @@ const StarField = React.memo(() => {
   );
 });
 
+const SpaceShip = React.memo(() => {
+  const shipRef = useRef(null);
+
+  useEffect(() => {
+    const animate = () => {
+      if (!shipRef.current) return;
+      
+      // Losowy punkt startowy w oddali
+      const side = Math.random() > 0.5 ? 1 : -1;
+      const startX = (Math.random() * 1000) * side;
+      const startY = (Math.random() - 0.5) * 500;
+      
+      gsap.fromTo(shipRef.current, 
+        { 
+          x: startX, 
+          y: startY, 
+          z: -2000, 
+          scale: 0, 
+          opacity: 0,
+          rotationY: side * 45
+        },
+        { 
+          x: -startX * 0.2, 
+          y: -startY * 0.2, 
+          z: 1500, 
+          scale: 15, 
+          opacity: 1, 
+          duration: 2.5, 
+          ease: "power2.in",
+          onComplete: () => {
+            gsap.set(shipRef.current, { opacity: 0 });
+            setTimeout(animate, Math.random() * 10000 + 10000);
+          }
+        }
+      );
+    };
+
+    const timer = setTimeout(animate, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div ref={shipRef} className="absolute pointer-events-none" style={{ transformStyle: 'preserve-3d', top: '50%', left: '50%' }}>
+       <div className="relative">
+          {/* Korpus statku - jasny punkt/smuga */}
+          <div className="w-12 h-1 bg-white rounded-full shadow-[0_0_20px_#fff,0_0_40px_var(--color-plasma)]" />
+          {/* Ślad (trail) */}
+          <div className="absolute right-full top-0 w-64 h-2 bg-gradient-to-r from-transparent via-white/20 to-white/60 blur-md" style={{ transform: 'translateX(20px)' }} />
+          {/* Dodatkowy proszek gwiezdny */}
+          <div className="absolute right-full top-0 w-32 h-10 bg-white/10 blur-xl rounded-full" style={{ transform: 'translateX(40px) translateY(-4px)' }} />
+       </div>
+    </div>
+  );
+});
+
 const Universe3D = React.memo(({ active }) => {
   const cameraRef = useRef(null);
   useEffect(() => {
@@ -57,6 +112,7 @@ const Universe3D = React.memo(({ active }) => {
     <div className={`universe-container ${active ? 'active' : ''}`}>
       <div ref={cameraRef} className="universe-camera">
         <StarField />
+        <SpaceShip />
         
         {/* Sun */}
         <div className="sun planet" style={{ top: '5%', left: '5%', transform: 'translateZ(-900px)' }} />
