@@ -45,20 +45,18 @@ const Universe3D = React.memo(() => {
 
   useEffect(() => {
     if (!cameraRef.current) return;
-    
     const ctx = gsap.context(() => {
-      // Płynna, zapętlona animacja kamery, która nie restartuje się bez powodu
       gsap.to(cameraRef.current, {
-        rotationY: 10,
-        rotationX: 3,
-        x: 50,
-        duration: 25,
+        rotationY: 8,
+        rotationX: 2,
+        x: 40,
+        z: 50,
+        duration: 20,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut"
       });
     });
-
     return () => ctx.revert();
   }, []);
 
@@ -68,23 +66,28 @@ const Universe3D = React.memo(() => {
         <StarField />
         
         {/* Sun */}
-        <div className="sun celestial-body" style={{ top: '10%', left: '10%', transform: 'translateZ(-800px)' }} />
+        <div className="sun celestial-body" style={{ top: '5%', left: '5%', transform: 'translateZ(-900px)' }} />
 
         {/* Saturn */}
-        <div className="celestial-body" style={{ top: '60%', left: '20%', transform: 'translateZ(-300px)' }}>
+        <div className="celestial-body" style={{ top: '55%', left: '15%', transform: 'translateZ(-400px)' }}>
           <div className="planet saturn">
             <div className="saturn-rings" />
           </div>
         </div>
 
         {/* Jupiter */}
-        <div className="celestial-body" style={{ top: '30%', right: '15%', transform: 'translateZ(100px)' }}>
+        <div className="celestial-body" style={{ top: '25%', right: '10%', transform: 'translateZ(-100px)' }}>
           <div className="planet jovian animate-spin-slow" />
         </div>
 
+        {/* Black Hole */}
+        <div className="celestial-body" style={{ bottom: '10%', right: '5%', transform: 'translateZ(-600px)' }}>
+          <div className="black-hole-core w-40 h-40" />
+        </div>
+
         {/* Earth */}
-        <div className="celestial-body" style={{ bottom: '20%', right: '40%', transform: 'translateZ(400px)' }}>
-          <div className="planet earth" style={{ width: '50px', height: '50px', background: 'radial-gradient(circle at 30% 30%, #4b9cd3, #004d99)' }} />
+        <div className="celestial-body" style={{ bottom: '15%', left: '40%', transform: 'translateZ(300px)' }}>
+          <div className="planet earth" style={{ width: '45px', height: '45px', background: 'radial-gradient(circle at 30% 30%, #4b9cd3, #004d99)' }} />
         </div>
       </div>
     </div>
@@ -522,20 +525,13 @@ const App = () => {
     <div 
       className="flex h-screen bg-void text-ghost font-sora selection:bg-plasma selection:text-white overflow-hidden transition-all duration-1000"
       style={{ 
-        background: activeAtmosphere ? activeAtmosphere.bg : 'var(--color-void)',
+        background: activeAtmosphere ? activeAtmosphere.bg : '#030303',
         '--color-plasma': activeAtmosphere ? activeAtmosphere.accent : '#7B61FF'
       }}
     >
-      {/* Supernova Effect Overlay */}
-      {showSupernova && (
-        <div className="fixed inset-0 z-[1000] pointer-events-none flex items-center justify-center">
-          <div className="supernova-core w-1 h-1 bg-white rounded-full shadow-[0_0_100px_50px_#fff,0_0_200px_100px_var(--color-plasma)] animate-ping" />
-        </div>
-      )}
+      {/* 🌌 Universe 3D Background - ALWAYS VISIBLE */}
+      <Universe3D />
 
-      {/* Universe 3D Background */}
-      <Universe3D active={!!activeAtmosphere} />
-      
       {/* Supernova Effect Overlay */}
       {musicConfig && (
         <audio 
