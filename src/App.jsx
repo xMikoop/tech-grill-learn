@@ -47,49 +47,60 @@ const SpaceShip = React.memo(() => {
     const animate = () => {
       if (!shipRef.current) return;
       
-      // Losowy punkt startowy w oddali
       const side = Math.random() > 0.5 ? 1 : -1;
-      const startX = (Math.random() * 1000) * side;
-      const startY = (Math.random() - 0.5) * 500;
+      const startX = (Math.random() * 1200) * side;
+      const startY = (Math.random() - 0.5) * 600;
       
+      // Wolniejszy, majestatyczny przelot
       gsap.fromTo(shipRef.current, 
         { 
           x: startX, 
           y: startY, 
-          z: -2000, 
-          scale: 0, 
+          z: -3000, 
+          scale: 0.05, 
           opacity: 0,
-          rotationY: side * 45
+          rotationY: side * 30,
+          rotationX: (Math.random() - 0.5) * 20
         },
         { 
-          x: -startX * 0.2, 
-          y: -startY * 0.2, 
-          z: 1500, 
-          scale: 15, 
+          x: -startX * 0.3, 
+          y: -startY * 0.3, 
+          z: 1000, 
+          scale: 8, 
           opacity: 1, 
-          duration: 2.5, 
-          ease: "power2.in",
+          duration: 18, // Dużo wolniej
+          ease: "none",
           onComplete: () => {
-            gsap.set(shipRef.current, { opacity: 0 });
-            setTimeout(animate, Math.random() * 10000 + 10000);
+            gsap.to(shipRef.current, { opacity: 0, duration: 2 });
+            setTimeout(animate, Math.random() * 10000 + 5000);
           }
         }
       );
     };
 
-    const timer = setTimeout(animate, 5000);
+    const timer = setTimeout(animate, 3000);
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <div ref={shipRef} className="absolute pointer-events-none" style={{ transformStyle: 'preserve-3d', top: '50%', left: '50%' }}>
-       <div className="relative">
-          {/* Korpus statku - jasny punkt/smuga */}
-          <div className="w-12 h-1 bg-white rounded-full shadow-[0_0_20px_#fff,0_0_40px_var(--color-plasma)]" />
-          {/* Ślad (trail) */}
-          <div className="absolute right-full top-0 w-64 h-2 bg-gradient-to-r from-transparent via-white/20 to-white/60 blur-md" style={{ transform: 'translateX(20px)' }} />
-          {/* Dodatkowy proszek gwiezdny */}
-          <div className="absolute right-full top-0 w-32 h-10 bg-white/10 blur-xl rounded-full" style={{ transform: 'translateX(40px) translateY(-4px)' }} />
+       <div className="relative flex items-center justify-center">
+          {/* Silniki / Płomień */}
+          <div className="absolute right-full w-20 h-4 bg-gradient-to-r from-transparent via-blue-500/20 to-blue-400 blur-md rounded-full animate-pulse" style={{ transform: 'translateX(10px)' }} />
+          
+          {/* Kadłub Statku */}
+          <div className="relative w-16 h-5 bg-graphite rounded-xl border border-white/10 shadow-2xl flex items-center justify-center">
+             {/* Kokpit */}
+             <div className="absolute top-1 left-2 w-4 h-1.5 bg-cyan-400/30 rounded-full blur-[0.5px]" />
+             {/* Skrzydła / Stateczniki */}
+             <div className="absolute -top-3 left-4 w-2 h-8 bg-graphite border-r border-white/5 rounded-sm skew-x-[30deg]" />
+             <div className="absolute -bottom-3 left-4 w-2 h-8 bg-graphite border-r border-white/5 rounded-sm -skew-x-[30deg]" />
+             {/* Engine Core */}
+             <div className="absolute right-0 w-2 h-3 bg-orange-600 rounded-l-full shadow-[0_0_10px_#ff4500]" />
+          </div>
+
+          {/* Gwiezdny pył za statkiem */}
+          <div className="absolute right-full w-96 h-1 bg-gradient-to-r from-transparent to-white/10 blur-sm" />
        </div>
     </div>
   );
