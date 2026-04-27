@@ -11,19 +11,48 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 import gsap from 'gsap';
 
-const Universe3D = () => {
+// Stałe pozycje gwiazd generowane raz poza komponentem, aby uniknąć skakania przy re-renderach
+const STATIC_STARS = Array.from({ length: 200 }).map((_, i) => ({
+  id: i,
+  top: `${Math.random() * 100}%`,
+  left: `${Math.random() * 100}%`,
+  size: `${Math.random() * 2 + 1}px`,
+  duration: `${Math.random() * 3 + 2}s`,
+}));
+
+const StarField = React.memo(() => {
+  return (
+    <div className="star-field pointer-events-none">
+      {STATIC_STARS.map(star => (
+        <div 
+          key={star.id} 
+          className="star" 
+          style={{ 
+            top: star.top, 
+            left: star.left, 
+            width: star.size, 
+            height: star.size, 
+            '--duration': star.duration 
+          }} 
+        />
+      ))}
+    </div>
+  );
+});
+
+const Universe3D = React.memo(() => {
   const cameraRef = useRef(null);
 
   useEffect(() => {
     if (!cameraRef.current) return;
     
-    // Smooth Cinematic Camera
     const ctx = gsap.context(() => {
+      // Płynna, zapętlona animacja kamery, która nie restartuje się bez powodu
       gsap.to(cameraRef.current, {
-        rotationY: 15,
-        rotationX: 5,
-        x: 100,
-        duration: 20,
+        rotationY: 10,
+        rotationX: 3,
+        x: 50,
+        duration: 25,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut"
@@ -60,35 +89,7 @@ const Universe3D = () => {
       </div>
     </div>
   );
-};
-
-const StarField = () => {
-  const stars = Array.from({ length: 200 }).map((_, i) => ({
-    id: i,
-    top: `${Math.random() * 100}%`,
-    left: `${Math.random() * 100}%`,
-    size: `${Math.random() * 2 + 1}px`,
-    duration: `${Math.random() * 3 + 2}s`,
-  }));
-
-  return (
-    <div className="star-field pointer-events-none">
-      {stars.map(star => (
-        <div 
-          key={star.id} 
-          className="star" 
-          style={{ 
-            top: star.top, 
-            left: star.left, 
-            width: star.size, 
-            height: star.size, 
-            '--duration': star.duration 
-          }} 
-        />
-      ))}
-    </div>
-  );
-};
+});
 
 const App = () => {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
