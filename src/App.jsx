@@ -66,25 +66,45 @@ const SpaceShip = React.memo(() => {
 
   return (
     <div ref={orbitRef} className="absolute pointer-events-none" style={{ transformStyle: 'preserve-3d', top: '50%', left: '50%' }}>
-       {/* Przesunięcie statku od centrum orbity (promień) i głębokość (Z) */}
        <div style={{ transform: 'translateX(800px) translateZ(-1000px) rotateY(90deg)', transformStyle: 'preserve-3d' }}>
-          <div className="relative flex items-center justify-center scale-[0.5]">
-             {/* Silniki / Płomień */}
-             <div className="absolute right-full w-20 h-4 bg-gradient-to-r from-transparent via-blue-500/20 to-blue-400 blur-md rounded-full animate-pulse" style={{ transform: 'translateX(10px)' }} />
+          <div className="relative flex items-center justify-center scale-[0.6]">
+             {/* Dynamiczny płomień silnika */}
+             <div className="absolute right-full flex items-center" style={{ transform: 'translateX(5px)' }}>
+                <div className="w-16 h-4 bg-blue-500/40 blur-md rounded-full animate-pulse" />
+                <div className="absolute right-0 w-8 h-2 bg-white/60 blur-[2px] rounded-full animate-pulse" />
+             </div>
              
-             {/* Kadłub Statku */}
-             <div className="relative w-16 h-5 bg-graphite rounded-xl border border-white/10 shadow-2xl flex items-center justify-center">
-                {/* Kokpit */}
-                <div className="absolute top-1 left-2 w-4 h-1.5 bg-cyan-400/30 rounded-full blur-[0.5px]" />
-                {/* Skrzydła / Stateczniki */}
-                <div className="absolute -top-3 left-4 w-2 h-8 bg-graphite border-r border-white/5 rounded-sm skew-x-[30deg]" />
-                <div className="absolute -bottom-3 left-4 w-2 h-8 bg-graphite border-r border-white/5 rounded-sm -skew-x-[30deg]" />
+             {/* Kadłub Statku z animowanymi detalami */}
+             <div className="relative w-20 h-6 bg-graphite rounded-full border border-white/10 shadow-2xl flex items-center justify-center overflow-hidden">
+                {/* Kokpit z pulsującym światłem */}
+                <div className="absolute top-1 left-4 w-6 h-2 bg-cyan-400/20 rounded-full overflow-hidden">
+                   <div className="w-full h-full bg-cyan-300/40 animate-pulse" />
+                </div>
+                
+                {/* Linie podziału kadłuba */}
+                <div className="absolute inset-0 flex justify-around opacity-20">
+                   <div className="w-[1px] h-full bg-white" />
+                   <div className="w-[1px] h-full bg-white" />
+                   <div className="w-[1px] h-full bg-white" />
+                </div>
+
                 {/* Engine Core */}
-                <div className="absolute right-0 w-2 h-3 bg-orange-600 rounded-l-full shadow-[0_0_10px_#ff4500]" />
+                <div className="absolute right-0 w-3 h-full bg-gradient-to-l from-orange-600 to-transparent" />
              </div>
 
-             {/* Bardziej subtelny ślad gwiezdny dla orbity */}
-             <div className="absolute right-full w-64 h-[1px] bg-gradient-to-r from-transparent to-white/5 blur-sm" />
+             {/* Skrzydła z animowanymi światłami pozycyjnymi */}
+             <div className="absolute -top-4 left-6 w-3 h-10 bg-graphite border-r border-white/10 rounded-sm skew-x-[25deg] origin-bottom animate-float-slow">
+                <div className="absolute top-0 left-0 w-1 h-1 bg-red-500 shadow-[0_0_5px_red] animate-ping" />
+             </div>
+             <div className="absolute -bottom-4 left-6 w-3 h-10 bg-graphite border-r border-white/10 rounded-sm -skew-x-[25deg] origin-top animate-float-slow">
+                <div className="absolute bottom-0 left-0 w-1 h-1 bg-green-500 shadow-[0_0_5px_green] animate-ping" />
+             </div>
+
+             {/* Obracający się element (np. radar/skaner) */}
+             <div className="absolute -top-6 left-10 w-4 h-4 border-t border-blue-400 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
+
+             {/* Smuga jonowa */}
+             <div className="absolute right-full w-80 h-[1px] bg-gradient-to-r from-transparent via-blue-500/5 to-white/10 blur-[1px]" />
           </div>
        </div>
     </div>
