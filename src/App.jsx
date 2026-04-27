@@ -75,12 +75,30 @@ const App = () => {
 
   // Firebase Auth state listener — persists session across refreshes
   useEffect(() => {
+    console.log("🚀 Inicjalizacja nasłuchiwania Auth...");
+    
+    // Safety timeout: if Firebase hangs, stop loading after 6s
+    const timeout = setTimeout(() => {
+      if (authLoading) {
+        console.warn("⚠️ Firebase Auth timeout - wymuszam koniec ładowania.");
+        setAuthLoading(false);
+      }
+    }, 6000);
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("✅ Stan Auth zmieniony:", user ? "Zalogowany" : "Wylogowany");
       setAuthUser(user || false);
       setAuthLoading(false);
+      clearTimeout(timeout);
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
+
+  console.log("🎨 Renderowanie komponentu App. Stan authLoading:", authLoading);
 
   // Consistency check: if view is lesson/quiz but no lesson is selected, go back to dashboard
   useEffect(() => {
@@ -325,8 +343,9 @@ const App = () => {
   // Show loading spinner while Firebase checks session
   if (authLoading) {
     return (
-      <div className="flex h-screen w-full bg-[#030303] items-center justify-center">
-        <Loader2 className="w-10 h-10 text-[#7B61FF] animate-spin" />
+      <div className="flex h-screen w-full bg-white text-black items-center justify-center flex-col gap-4">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+        <p className="font-bold animate-pulse text-sm">TRWA INICJALIZACJA SYSTEMU...</p>
       </div>
     );
   }
