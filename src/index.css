@@ -33,11 +33,11 @@
   inset: 0;
   perspective: 1200px;
   overflow: hidden;
-  z-index: 0;
+  z-index: 1; /* Powyżej tła CSS, poniżej treści UI */
   pointer-events: none;
-  background: #000;
-  opacity: 0; /* Domyślnie ukryte */
-  transition: opacity 5s ease-in-out; /* Powolne wyłanianie się */
+  background: transparent; /* Tło jest na rodzicu App */
+  opacity: 0;
+  transition: opacity 5s ease-in-out;
 }
 
 .universe-container.active {

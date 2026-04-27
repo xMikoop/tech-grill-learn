@@ -528,7 +528,7 @@ const App = () => {
       )}
 
       {/* Universe 3D Background */}
-      <Universe3D active={!!activeAtmosphere} />
+      <Universe3D active={true} />
       
       {/* Supernova Effect Overlay */}
       {musicConfig && (
@@ -545,7 +545,7 @@ const App = () => {
 
       {/* Globalny widget muzyczny */}
       {musicConfig && view !== 'onboarding' && (
-        <div className="fixed bottom-6 right-6 z-[9000] glass-dark p-3 rounded-full flex items-center gap-3 border border-plasma/30 shadow-plasma-glow">
+        <div className="fixed bottom-6 right-6 z-[9000] glass-dark p-3 rounded-full flex items-center gap-3 border border-plasma/30 shadow-plasma-glow relative z-[9000]">
           <div className="w-8 h-8 rounded-full bg-plasma/20 flex items-center justify-center">
             {isPlaying ? (
               <Music className="w-4 h-4 text-plasma animate-pulse" />
@@ -589,7 +589,7 @@ const App = () => {
 
       {/* SIDEBAR (Inlined to prevent input focus loss) */}
       {view !== 'onboarding' && (
-        <aside className="w-80 bg-void border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0">
+        <aside className="w-80 bg-void/40 backdrop-blur-xl border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0 relative z-10">
           <div className="p-5 border-b border-white/5 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden border border-plasma/30 shrink-0 bg-void">
               {authUser?.photoURL ? (
@@ -698,7 +698,7 @@ const App = () => {
       )}
 
       {/* Scrollable Content Area */}
-      <main className={`flex-1 overflow-y-auto ${view === 'onboarding' ? 'flex items-center justify-center px-6 bg-[url("noise.png")]' : 'pb-32 px-6 lg:px-12 pt-12 relative'}`}>
+      <main className={`flex-1 overflow-y-auto relative z-10 ${view === 'onboarding' ? 'flex items-center justify-center px-6 bg-[url("noise.png")]' : 'pb-32 px-6 lg:px-12 pt-12'}`}>
         
         {view === 'onboarding' && (
           <div className="max-w-2xl w-full animate-fade-in relative z-10">
