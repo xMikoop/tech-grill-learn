@@ -11,33 +11,26 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 import gsap from 'gsap';
 
-const Universe3D = ({ active }) => {
+const Universe3D = () => {
   const cameraRef = useRef(null);
 
   useEffect(() => {
     if (!cameraRef.current) return;
     
-    // Cinematic Camera Movement
-    const tl = gsap.timeline({ repeat: -1, yoyo: true });
-    tl.to(cameraRef.current, {
-      x: -50,
-      y: 30,
-      z: 100,
-      rotationY: 5,
-      rotationX: -2,
-      duration: 15,
-      ease: "sine.inOut"
-    }).to(cameraRef.current, {
-      x: 50,
-      y: -20,
-      z: -50,
-      rotationY: -5,
-      rotationX: 2,
-      duration: 20,
-      ease: "sine.inOut"
+    // Smooth Cinematic Camera
+    const ctx = gsap.context(() => {
+      gsap.to(cameraRef.current, {
+        rotationY: 15,
+        rotationX: 5,
+        x: 100,
+        duration: 20,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      });
     });
 
-    return () => tl.kill();
+    return () => ctx.revert();
   }, []);
 
   return (
@@ -45,24 +38,25 @@ const Universe3D = ({ active }) => {
       <div ref={cameraRef} className="universe-camera">
         <StarField />
         
-        {/* Sun in the deep distance */}
-        <div className="celestial-body sun animate-pulse-slow" />
+        {/* Sun */}
+        <div className="sun celestial-body" style={{ top: '10%', left: '10%', transform: 'translateZ(-800px)' }} />
 
-        {/* Saturn with rings */}
-        <div className="celestial-body saturn animate-float">
-          <div className="saturn-rings" />
+        {/* Saturn */}
+        <div className="celestial-body" style={{ top: '60%', left: '20%', transform: 'translateZ(-300px)' }}>
+          <div className="planet saturn">
+            <div className="saturn-rings" />
+          </div>
         </div>
 
-        {/* Jupiter (Focal point) */}
-        <div className="planet jovian animate-spin-slow" />
-
-        {/* Distant Black Hole */}
-        <div className="black-hole">
-          <div className="black-hole-core animate-pulse" />
+        {/* Jupiter */}
+        <div className="celestial-body" style={{ top: '30%', right: '15%', transform: 'translateZ(100px)' }}>
+          <div className="planet jovian animate-spin-slow" />
         </div>
 
         {/* Earth */}
-        <div className="planet earth" style={{ transform: 'translate3d(-20%, 60%, 400px)' }} />
+        <div className="celestial-body" style={{ bottom: '20%', right: '40%', transform: 'translateZ(400px)' }}>
+          <div className="planet earth" style={{ width: '50px', height: '50px', background: 'radial-gradient(circle at 30% 30%, #4b9cd3, #004d99)' }} />
+        </div>
       </div>
     </div>
   );
