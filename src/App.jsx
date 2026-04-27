@@ -4,12 +4,15 @@ import { lessons } from './data';
 
 const App = () => {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
-  const [xp, setXp] = useState(0);
-  const [view, setView] = useState('onboarding'); // 'onboarding', 'dashboard', 'lesson', 'quiz', 'knowledge', 'favorites', 'history'
+  const [xp, setXp] = useState(() => parseInt(localStorage.getItem('tg_xp') || '0'));
+  const [view, setView] = useState(() => localStorage.getItem('tg_view') || 'onboarding');
   
   // Lesson state
   const [unlockedConcepts, setUnlockedConcepts] = useState({});
-  const [completedModules, setCompletedModules] = useState([]); 
+  const [completedModules, setCompletedModules] = useState(() => {
+    const saved = localStorage.getItem('tg_completed');
+    return saved ? JSON.parse(saved) : [];
+  });
   
   // Quiz state
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
@@ -19,11 +22,22 @@ const App = () => {
   const [linkInput, setLinkInput] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
 
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('tg_auth') === 'true');
+  const [authStep, setAuthStep] = useState('email'); // 'email', 'verify', 'loading'
+  const [authEmail, setAuthEmail] = useState('');
+  const [authCode, setAuthCode] = useState('');
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [authToast, setAuthToast] = useState('');
+
   // Onboarding & Music state
   const [obForm, setObForm] = useState({ calm: '', energy: '', joy: '' });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  const [musicConfig, setMusicConfig] = useState(null); 
+  const [musicConfig, setMusicConfig] = useState(() => {
+    const saved = localStorage.getItem('tg_music');
+    return saved ? JSON.parse(saved) : null;
+  }); 
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -39,6 +53,21 @@ const App = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
+
+  useEffect(() => {
+    localStorage.setItem('tg_view', view);
+  }, [view]);
+
+  useEffect(() => {
+    localStorage.setItem('tg_xp', xp.toString());
+    localStorage.setItem('tg_completed', JSON.stringify(completedModules));
+  }, [xp, completedModules]);
+
+  useEffect(() => {
+    if (musicConfig) {
+      localStorage.setItem('tg_music', JSON.stringify(musicConfig));
+    }
+  }, [musicConfig]);
 
   const addXp = (amount, achievement) => {
     setXp(prev => prev + amount);
@@ -153,6 +182,29 @@ const App = () => {
       else if (lowerText.includes('llm') || lowerText.includes('qwen') || lowerText.includes('model') || lowerText.includes('ai')) {
         responseText = "Mniejsze modele (SLM), takie jak Qwen2.5-Coder, są wysoce wyspecjalizowane. Pozwalają na lokalny inference na krawędzi (Edge) i obniżają koszty API, co jest kluczowe w nowoczesnej architekturze 2026 roku.";
       }
+      else if (lowerText.includes('wyjaśnij') || lowerText.includes('wytłumacz') || lowerText.includes('co to jest')) {
+        const searchTerms = lowerText.replace(/wyjaśnij|wytłumacz|co to jest|mi/g, '').trim().split(' ').filter(w => w.length > 2);
+        let found = false;
+        
+        if (searchTerms.length > 0) {
+          for (const lesson of lessons) {
+            for (const concept of lesson.concepts) {
+              const match = searchTerms.some(term => concept.term.toLowerCase().includes(term));
+              if (match) {
+                const textOnly = concept.explanation.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                responseText = `Z bazy wiedzy (${concept.term}):\n\n${textOnly.substring(0, 300)}... \n\nPrzejdź do modułu "${lesson.title}", by poznać szczegóły.`;
+                found = true;
+                break;
+              }
+            }
+            if (found) break;
+          }
+        }
+        
+        if (!found) {
+          responseText = "Zintegrowane API nie znalazło precyzyjnego dopasowania w lekcjach. Użyj słów kluczowych (np. 'wytłumacz LCP' lub 'wyjaśnij Node').";
+        }
+      }
 
       setChatHistory(prev => [...prev, { role: 'assistant', text: responseText }]);
     }, 800);
@@ -173,6 +225,151 @@ const App = () => {
       default: return <Terminal className={className} />;
     }
   };
+
+  const handleSendCode = () => {
+    if (!authEmail.includes('@')) return;
+    setAuthStep('loading');
+    setTimeout(() => {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      setAuthStep('verify');
+      setAuthToast(`DEV MODE: Wysłano kod: ${code} na ${authEmail}`);
+      setTimeout(() => setAuthToast(''), 8000);
+    }, 1500);
+  };
+
+  const handleVerifyCode = () => {
+    if (authCode === generatedCode || authCode === '000000') {
+      setAuthStep('loading');
+      setTimeout(() => {
+        setIsAuthenticated(true);
+        localStorage.setItem('tg_auth', 'true');
+      }, 1000);
+    } else {
+      setAuthToast('Nieprawidłowy kod weryfikacyjny.');
+      setTimeout(() => setAuthToast(''), 3000);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    setAuthStep('loading');
+    setTimeout(() => {
+      setIsAuthenticated(true);
+      localStorage.setItem('tg_auth', 'true');
+    }, 1500);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen w-full bg-void text-ghost font-sora items-center justify-center selection:bg-plasma selection:text-white relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,var(--color-plasma)_0%,transparent_25%)] opacity-[0.03] blur-[100px]" />
+        
+        {/* Toast */}
+        {authToast && (
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 z-50 bg-plasma text-void px-6 py-3 rounded-full font-bold text-sm shadow-plasma-glow animate-fade-in border border-white/20 whitespace-nowrap">
+            {authToast}
+          </div>
+        )}
+
+        <div className="w-full max-w-md z-10 glass-panel p-8 rounded-3xl border border-plasma/30 shadow-2xl relative">
+          
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-plasma-glow bg-void overflow-hidden border border-plasma/50">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+            </div>
+          </div>
+          
+          <h1 className="text-3xl font-black text-center mb-2 tracking-tighter">TECH GRILL</h1>
+          <p className="text-plasma text-center text-sm font-bold tracking-widest uppercase mb-8">Dostęp Wymagany</p>
+
+          {authStep === 'loading' && (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <Loader2 className="w-10 h-10 text-plasma animate-spin" />
+              <p className="text-plasmaLight font-bold tracking-widest uppercase text-sm">Autoryzacja...</p>
+            </div>
+          )}
+
+          {authStep === 'email' && (
+            <div className="space-y-6 animate-fade-in">
+              <button 
+                onClick={handleGoogleLogin}
+                className="w-full bg-white/5 border border-white/10 hover:border-plasma/50 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-3 transition-all"
+              >
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Zaloguj przez Google
+              </button>
+              
+              <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-white/10"></div>
+                <div className="text-xs font-bold text-white/30 uppercase tracking-widest">LUB</div>
+                <div className="flex-1 h-px bg-white/10"></div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold tracking-widest text-plasma mb-2 uppercase">Adres Email</label>
+                <div className="relative">
+                  <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <input 
+                    type="email" 
+                    placeholder="Wpisz swój email..."
+                    value={authEmail}
+                    onChange={e => setAuthEmail(e.target.value)}
+                    className="w-full bg-void border border-white/10 rounded-xl pl-12 pr-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
+                  />
+                </div>
+              </div>
+
+              <button 
+                onClick={handleSendCode}
+                disabled={!authEmail.includes('@')}
+                className="w-full bg-plasma text-void font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-plasmaLight transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                WYŚLIJ KOD DOSTĘPU <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+
+          {authStep === 'verify' && (
+            <div className="space-y-6 animate-fade-in">
+              <p className="text-center text-sm text-ghost/70">Wpisz 6-cyfrowy kod, który wysłaliśmy na adres <br/><span className="text-plasma font-bold">{authEmail}</span></p>
+              
+              <div>
+                <label className="block text-xs font-bold tracking-widest text-plasma mb-2 uppercase">Kod Weryfikacyjny</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
+                  <input 
+                    type="text" 
+                    placeholder="______"
+                    maxLength={6}
+                    value={authCode}
+                    onChange={e => setAuthCode(e.target.value)}
+                    className="w-full bg-void border border-white/10 rounded-xl pl-12 pr-4 py-3 text-ghost text-center text-2xl tracking-[1em] font-mono focus:outline-none focus:border-plasma transition-colors"
+                  />
+                </div>
+              </div>
+
+              <button 
+                onClick={handleVerifyCode}
+                disabled={authCode.length < 6}
+                className="w-full bg-plasma text-void font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-plasmaLight transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                AUTORYZUJ <Unlock className="w-5 h-5" />
+              </button>
+              
+              <button 
+                onClick={() => setAuthStep('email')}
+                className="w-full text-xs font-bold text-white/40 hover:text-white transition-colors"
+              >
+                WRÓĆ DO ZMIANY EMAILA
+              </button>
+            </div>
+          )}
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-void text-ghost font-sora selection:bg-plasma selection:text-white overflow-hidden">
@@ -238,8 +435,8 @@ const App = () => {
       {view !== 'onboarding' && (
         <aside className="w-80 bg-void border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0">
           <div className="p-6 border-b border-white/5 flex items-center gap-3">
-            <div className="w-10 h-10 bg-plasma rounded-xl flex items-center justify-center shadow-plasma-glow">
-              <Terminal className="w-6 h-6 text-void" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-plasma-glow bg-void overflow-hidden border border-plasma/30">
+              <img src="/logo.png" alt="Tech Grill Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="font-black text-xl tracking-tighter leading-none">TECH GRILL</h1>
