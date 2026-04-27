@@ -765,8 +765,8 @@ const App = () => {
 
       {/* SIDEBAR (Inlined to prevent input focus loss) */}
       {view !== 'onboarding' && (
-        <aside className="w-80 bg-void/40 backdrop-blur-xl border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0 relative z-10">
-          <div className="p-5 border-b border-white/5 flex items-center gap-3">
+        <aside className="w-80 bg-void/40 backdrop-blur-xl border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0 relative z-10 pointer-events-none">
+          <div className="p-5 border-b border-white/5 flex items-center gap-3 pointer-events-auto">
             <div className="w-10 h-10 rounded-xl overflow-hidden border border-plasma/30 shrink-0 bg-void">
               {authUser?.photoURL ? (
                 <img src={authUser.photoURL} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -791,7 +791,7 @@ const App = () => {
             </button>
           </div>
 
-          <div className="p-6 border-b border-white/5">
+          <div className="p-6 border-b border-white/5 pointer-events-auto">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-ghost/10 rounded-full flex items-center justify-center border border-white/10">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ghost/50"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -818,7 +818,7 @@ const App = () => {
             </div>
           </div>
 
-          <div className="p-4 space-y-1">
+          <div className="p-4 space-y-1 pointer-events-auto">
             <button onClick={() => setView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm ${view === 'dashboard' ? 'bg-plasma text-void shadow-plasma-glow' : 'text-ghost/70 hover:bg-white/5 hover:text-ghost'}`}>
               <LayoutDashboard className="w-5 h-5" /> Dashboard
             </button>
@@ -833,7 +833,7 @@ const App = () => {
             </button>
           </div>
 
-          <div className="flex-1 border-t border-white/5 mt-auto flex flex-col overflow-hidden bg-plasma/5">
+          <div className="flex-1 border-t border-white/5 mt-auto flex flex-col overflow-hidden bg-plasma/5 pointer-events-auto">
             <div className="p-4 border-b border-white/5 bg-void text-xs font-bold tracking-widest uppercase text-plasma flex items-center gap-2">
               <Brain className="w-4 h-4" /> AI Mentor
             </div>
@@ -874,10 +874,9 @@ const App = () => {
       )}
 
       {/* Scrollable Content Area */}
-      <main className={`flex-1 overflow-y-auto relative z-10 ${view === 'onboarding' ? 'flex items-center justify-center px-6 bg-[url("noise.png")]' : 'pb-32 px-6 lg:px-12 pt-12'}`}>
-        
+      <main className={`flex-1 overflow-y-auto relative z-10 pointer-events-none ${view === 'onboarding' ? 'flex items-center justify-center px-6 bg-[url("noise.png")]' : 'pb-32 px-6 lg:px-12 pt-12'}`}>
         {view === 'onboarding' && (
-          <div className="max-w-2xl w-full animate-fade-in relative z-10">
+          <div className="max-w-2xl w-full animate-fade-in relative z-10 pointer-events-auto">
             <div className="glass-dark p-8 md:p-12 rounded-[3rem] border border-plasma/30 shadow-plasma-glow">
               <div className="w-16 h-16 bg-plasma/10 rounded-2xl border border-plasma/50 flex items-center justify-center mb-8 mx-auto">
                 <Brain className="w-8 h-8 text-plasma" />
@@ -969,7 +968,7 @@ const App = () => {
         )}
 
         {view === 'dashboard' && (
-          <div className="space-y-12 animate-fade-in max-w-5xl mx-auto">
+          <div className="space-y-12 animate-fade-in max-w-5xl mx-auto pointer-events-auto">
             <header className="space-y-6 text-center mb-16 flex flex-col items-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-plasma/30 bg-plasma/5 text-plasma text-sm font-bold tracking-widest uppercase">
                 <Brain className="w-4 h-4" /> Baza Wiedzy Odblokowana
@@ -1012,7 +1011,7 @@ const App = () => {
         )}
 
         {view === 'knowledge' && (
-           <div className="animate-fade-in max-w-4xl mx-auto mt-12 space-y-8 pb-20">
+           <div className="animate-fade-in max-w-4xl mx-auto mt-12 space-y-8 pb-20 pointer-events-auto">
               <div className="flex items-center gap-4 mb-8">
                  <div className="w-16 h-16 rounded-2xl bg-plasma/10 border border-plasma/30 flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-plasma" />
@@ -1078,7 +1077,7 @@ const App = () => {
         )}
 
         {(view === 'favorites' || view === 'history') && (
-           <div className="animate-fade-in max-w-3xl mx-auto mt-20 text-center space-y-6">
+           <div className="animate-fade-in max-w-3xl mx-auto mt-20 text-center space-y-6 pointer-events-auto">
               <div className="w-24 h-24 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-8">
                  {view === 'favorites' && <Star className="w-10 h-10 text-ghost/50" />}
                  {view === 'history' && <History className="w-10 h-10 text-ghost/50" />}
@@ -1093,7 +1092,7 @@ const App = () => {
         )}
 
         {view === 'lesson' && currentLesson && (
-          <div className="animate-slide-up space-y-8 max-w-4xl mx-auto pb-20">
+          <div className="animate-slide-up space-y-8 max-w-4xl mx-auto pb-20 pointer-events-auto">
             <button 
               onClick={() => setView('dashboard')}
               className="flex items-center gap-2 text-ghost/50 hover:text-plasma transition-colors mb-8 bg-white/5 px-4 py-2 rounded-full font-medium text-sm w-fit"
@@ -1162,7 +1161,7 @@ const App = () => {
         )}
 
         {view === 'quiz' && currentLesson && (
-          <div className="animate-slide-up space-y-8 max-w-3xl mx-auto pb-20">
+          <div className="animate-slide-up space-y-8 max-w-3xl mx-auto pb-20 pointer-events-auto">
              <div className="flex justify-between items-center mb-8 bg-white/5 p-4 rounded-2xl border border-white/5">
                <button 
                 onClick={() => setView('lesson')}
