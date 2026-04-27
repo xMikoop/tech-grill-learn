@@ -655,7 +655,14 @@ const App = () => {
       )}
 
       {/* Universe 3D Background */}
-      <Universe3D active={true} onPlanetClick={setFocusedPlanet} focusedPlanet={focusedPlanet} />
+      <Universe3D 
+        active={true} 
+        onPlanetClick={(p) => { 
+          setFocusedPlanet(p);
+          setXp(prev => prev + 1); // Mały XP za odkrycie planety
+        }} 
+        focusedPlanet={focusedPlanet} 
+      />
 
       {/* Planet Info Panel */}
       {focusedPlanet && CELESTIAL_INFO[focusedPlanet] && (

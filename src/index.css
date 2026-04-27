@@ -34,9 +34,9 @@
   inset: 0;
   perspective: 1200px;
   overflow: hidden;
-  z-index: 1; /* Powyżej tła CSS, poniżej treści UI */
+  z-index: 20; /* Na wierzchu, aby kliknięcia działały */
   pointer-events: none;
-  background: transparent; /* Tło jest na rodzicu App */
+  background: transparent;
   opacity: 0;
   transition: opacity 5s ease-in-out;
 }
