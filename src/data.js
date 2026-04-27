@@ -5,62 +5,32 @@ export const lessons = [
     category: 'Performance',
     color: '#4FC3F7',
     icon: 'Zap',
-    content: `
-      <h3>LCP (Largest Contentful Paint)</h3>
-      <p>Mierzy czas do wyrenderowania największego widocznego elementu. <strong>Cel: poniżej 2,5 s</strong>.</p>
-      
-      <h3>INP (Interaction to Next Paint)</h3>
-      <p>Mierzy responsywność na interakcje użytkownika. <strong>Cel: poniżej 200 ms</strong>.</p>
-      
-      <h3>CLS (Cumulative Layout Shift)</h3>
-      <p>Mierzy stabilność wizualną layoutu. <strong>Cel: poniżej 0,1</strong>.</p>
-    `,
-    quiz: {
-      question: "Która metryka odpowiada za stabilność wizualną (brak 'skaczących' elementów)?",
-      options: ["LCP", "INP", "CLS", "TTFB"],
-      correct: 2
-    }
-  },
-  {
-    id: 'l2',
-    title: 'Lazy-Loading',
-    category: 'Performance',
-    color: '#4FC3F7',
-    icon: 'Clock',
-    content: `
-      <p><strong>Lazy-loading</strong> (ładowanie leniwe) to technika, w której zasoby nie są ładowane od razu, lecz dopiero wtedy, gdy są potrzebne.</p>
-      
-      <h3>Analogia fizyczna</h3>
-      <p>To jak układ nerwowy autonomiczny — aktywuje tylko te mięśnie, które są potrzebne.</p>
-      
-      <h3>Przykład w Next.js</h3>
-      <p>Używamy <code>next/dynamic</code> dla ciężkich komponentów.</p>
-    `,
-    quiz: {
-      question: "Kiedy zasób ładowany jest przy 'Lazy-loadingu'?",
-      options: ["Zawsze przy starcie", "Dopiero gdy jest potrzebny", "Tylko na urządzeniach mobilnych", "Nigdy"],
-      correct: 1
-    }
-  },
-  {
-    id: 'l3',
-    title: 'API Security',
-    category: 'Security',
-    color: '#A5D6A7',
-    icon: 'Shield',
-    content: `
-      <p>Bezpieczeństwo kluczy API w Next.js:</p>
-      <ul>
-        <li>Klucze tylko w <code>.env.local</code>.</li>
-        <li>Nigdy nie używaj prefixu <code>NEXT_PUBLIC_</code> dla kluczy tajnych.</li>
-        <li>Wywołania tylko w Server Actions lub Route Handlers.</li>
-      </ul>
-    `,
-    quiz: {
-      question: "Który prefix sprawia, że zmienna środowiskowa jest widoczna dla klienta?",
-      options: ["SECRET_", "PRIVATE_", "NEXT_PUBLIC_", "API_"],
-      correct: 2
-    }
+    concepts: [
+      {
+        term: 'LCP (Largest Contentful Paint)',
+        explanation: 'Mierzy czas do wyrenderowania największego widocznego elementu na stronie (np. głównego obrazka hero lub największego bloku tekstu). W aplikacjach AI częstym problemem jest ładowanie na starcie ciężkich czatów, co opóźnia LCP.\n\n**Cel**: poniżej 2,5 sekundy.'
+      },
+      {
+        term: 'INP (Interaction to Next Paint)',
+        explanation: 'Zastąpił FID. Mierzy responsywność aplikacji na działania użytkownika w całym cyklu jej życia. Jeśli klikniesz przycisk "Wygeneruj" i UI "zamrozi się" podczas czekania na odpowiedź modelu (bo wątek główny JS jest zablokowany), Twój INP będzie katastrofalny.\n\n**Cel**: poniżej 200 ms.'
+      },
+      {
+        term: 'CLS (Cumulative Layout Shift)',
+        explanation: 'Mierzy stabilność wizualną. W AI to prawdziwy zabójca UX: kiedy streamujesz odpowiedź z LLM (token po tokenie), kontener wiadomości ciągle się powiększa, przesuwając wszystko pod spodem. Rozwiązaniem jest rezerwacja miejsca lub sprytny scroll-anchoring.\n\n**Cel**: poniżej 0,1.'
+      }
+    ],
+    quizzes: [
+      {
+        question: "Która metryka odpowiada za płynność interakcji i brak 'zamrażania' interfejsu?",
+        options: ["LCP", "INP", "CLS", "FCP"],
+        correct: 1
+      },
+      {
+        question: "Dlaczego streaming odpowiedzi modelu AI negatywnie wpływa na CLS?",
+        options: ["Ponieważ zajmuje cały wątek przeglądarki", "Ponieważ obrazki ładują się wolniej", "Ponieważ dynamicznie powiększający się tekst ciągle przesuwa elementy poniżej", "Streaming nie ma wpływu na CLS"],
+        correct: 2
+      }
+    ]
   },
   {
     id: 'l4',
@@ -68,21 +38,32 @@ export const lessons = [
     category: 'Architecture',
     color: '#FFD54F',
     icon: 'Database',
-    content: `
-      <h3>Vercel + Supabase + Next.js</h3>
-      <p>Ten stos technologiczny to fundament budowy nowoczesnych aplikacji AI typu end-to-end. Pozwala na samodzielne stworzenie pełnego produktu bez czekania na specyfikację (Backend-as-a-Service).</p>
-      
-      <h3>Dlaczego używamy Next.js? (Krytyczne spojrzenie)</h3>
-      <p>Nie chodzi tylko o "jak to napisać", ale o architekturę. Wykorzystujemy <strong>React Server Components (RSC)</strong> do bezpiecznego łączenia warstwy AI, ukrywania kluczy API na serwerze i eliminowania ciężkich bundli JS u klienta.</p>
-      
-      <h3>Filozofia pracy</h3>
-      <p>Od idei do działającego produktu — rozumiesz jak zbudować frontend, spiąć go z bazą danych (np. Supabase z autoryzacją) i wdrożyć na produkcję (Vercel) jednym kliknięciem.</p>
-    `,
-    quiz: {
-      question: "Co daje wykorzystanie stacku Vercel + Supabase + Next.js?",
-      options: ["Tylko szybsze ładowanie stylów CSS", "Możliwość samodzielnego zbudowania produktu End-to-End", "Wymusza pracę w ogromnych zespołach", "Służy tylko do pisania dokumentacji"],
-      correct: 1
-    }
+    concepts: [
+      {
+        term: 'End-to-End za pomocą Vercel + Supabase',
+        explanation: 'Kombinacja Next.js (hostowanego na Vercel) i Supabase (Baza PostgreSQL z autoryzacją jako usługa) pozwala samodzielnie zbudować całą aplikację. Nie musisz prosić "zespołu backendowego" o stworzenie API.'
+      },
+      {
+        term: 'React Server Components (RSC)',
+        explanation: 'Klucz do bezpieczeństwa AI. Kiedy odpytujesz Claude API, musisz użyć tajnego klucza. Jeśli zrobisz to z poziomu przeglądarki, każdy go ukradnie. RSC wykonują się na serwerze - fetchujesz dane z API AI, a do przeglądarki wysyłasz już tylko gotowy tekst (lub UI). Zero ryzyka wycieku kluczy.'
+      },
+      {
+        term: 'Praca bez Specyfikacji',
+        explanation: 'W nowoczesnym ekosystemie startupów AI, nikt nie daje Ci 100-stronicowej dokumentacji w JIRA. Otrzymujesz problem biznesowy, łączysz narzędzia i dostarczasz działający prototyp w 48 godzin.'
+      }
+    ],
+    quizzes: [
+      {
+        question: "Dlaczego integracja API (np. OpenAI) w Client Components jest błędem?",
+        options: ["Jest zbyt wolna", "Naraża tajne klucze API na kradzież przez użytkownika", "Powoduje błędy TypeScripta", "React na to nie pozwala"],
+        correct: 1
+      },
+      {
+        question: "Co daje wykorzystanie stacku Vercel + Supabase + Next.js?",
+        options: ["Tylko szybsze ładowanie stylów CSS", "Możliwość samodzielnego wdrożenia produktu End-to-End przez jedną osobę", "Wymusza pracę w ogromnych zespołach", "Służy tylko do pisania dokumentacji"],
+        correct: 1
+      }
+    ]
   },
   {
     id: 'l5',
@@ -90,66 +71,87 @@ export const lessons = [
     category: 'Workflow',
     color: '#CE93D8',
     icon: 'Brain',
-    content: `
-      <h3>Ecosystem Tools</h3>
-      <p>Codzienne korzystanie z narzędzi takich jak <strong>Cursor, Claude, v0, Stitch czy ElevenLabs</strong>. Nie wystarczy ich tylko znać, trzeba wiedzieć, do czego nadają się najlepiej.</p>
-      
-      <h3>Praktyczny przykład (Wiedza Krytyczna)</h3>
-      <p><em>"Używam Perplexity do researchu, ponieważ przeszukuje internet w czasie rzeczywistym z cytowaniami, ale używam Claude 3.5 Sonnet do pisania kodu, bo ma o wiele lepsze rozumienie kontekstu całego repozytorium niż GPT-4."</em></p>
-      
-      <h3>Speeding up the layer</h3>
-      <p>LLM przyspiesza każdą warstwę: pisanie kodu, generowanie copy na landing page, analizę decyzji biznesowych czy generowanie interfejsów (v0.dev).</p>
-    `,
-    quiz: {
-      question: "Czym charakteryzuje się krytyczne podejście do narzędzi AI?",
-      options: ["Używaniem ChatGPT do absolutnie każdego zadania", "Ślepym wklejaniem kodu z Cursora na produkcję", "Wiedzą, które narzędzie (np. Claude vs Perplexity) rozwiąże dany problem najlepiej", "Unikaniem używania AI, by pisać kod w 100% samemu"],
-      correct: 2
-    }
+    concepts: [
+      {
+        term: 'Dlaczego Cursor, a nie ChatGPT?',
+        explanation: 'ChatGPT to po prostu czat. Cursor to edytor kodu z "Composerem", który widzi wszystkie Twoje pliki na raz. Potrafi napisać funkcję, która rozumie typy z innego pliku i od razu zaaplikować zmiany do drzewa katalogów.'
+      },
+      {
+        term: 'Specjalizacja Modeli',
+        explanation: 'Junior używa jednego modelu do wszystkiego. Senior wie, że Perplexity przeszukuje sieć w czasie rzeczywistym z cytowaniami, Sonnet 3.5 jest bezkonkurencyjny w programowaniu, a ElevenLabs niszczy system w generowaniu głosu.'
+      },
+      {
+        term: 'v0.dev / Rapid UI',
+        explanation: 'v0.dev (od Vercela) pozwala wygenerować gotowe, piękne komponenty React (Tailwind + Shadcn) w sekundy, używając języka naturalnego. Używasz go, by przeskoczyć żmudne stylowanie flexboxów i od razu przejść do logiki biznesowej.'
+      }
+    ],
+    quizzes: [
+      {
+        question: "Czym charakteryzuje się dojrzałe, krytyczne podejście do narzędzi AI?",
+        options: ["Używaniem najdroższego modelu do każdego zadania", "Odrzuceniem AI i pisaniem wszystkiego od zera", "Wybieraniem konkretnego narzędzia do konkretnego problemu (np. Perplexity vs Claude)", "Poleganiem w 100% na wygenerowanym kodzie bez jego czytania"],
+        correct: 2
+      }
+    ]
   },
   {
     id: 'l6',
-    title: 'Automatyzacja i Data Flows',
+    title: 'Automatyzacja (n8n & Zapier)',
     category: 'Automation',
     color: '#FF7043',
     icon: 'Workflow',
-    content: `
-      <h3>Złota zasada Automatyzacji</h3>
-      <p><strong>"Jeśli coś jest robione ręcznie dzisiaj, twoim zadaniem jest to zautomatyzować do jutra."</strong></p>
-      
-      <h3>Narzędzia: n8n, Make, Zapier</h3>
-      <p>Eksploracja i budowa integracji to klucz. Budowanie przepływów danych (Data flows) pomiędzy różnymi platformami. Zamiast płacić 1000$ miesięcznie za drogi SaaS, potrafisz zbudować w n8n własne wewnętrzne narzędzie (Internal Tool), które robi to samo z użyciem API OpenAI.</p>
-      
-      <h3>Marketing Workflows</h3>
-      <p>Wdrażanie AI do prawdziwych procesów: zautomatyzowana produkcja treści, narzędzia dla kampanii, systemy dla partnerów.</p>
-    `,
-    quiz: {
-      question: "Co powinieneś zrobić, gdy zauważysz proces biznesowy wykonywany codziennie ręcznie?",
-      options: ["Zignorować go, bo to nie kod", "Zautomatyzować go używając np. n8n lub własnego skryptu", "Zatrudnić więcej osób do jego wykonywania", "Zrobić ticket w JIRA i czekać rok"],
-      correct: 1
-    }
+    concepts: [
+      {
+        term: 'Eliminacja pracy ręcznej',
+        explanation: 'Podstawowa zasada nowoczesnego inżyniera AI w firmie produktowej: "Jeśli coś jest dzisiaj robione ręcznie (np. przepisywanie danych z maila do CRM), moim zadaniem jest sprawić, by jutro robił to automat".'
+      },
+      {
+        term: 'Data Flows w n8n',
+        explanation: 'n8n to potężne narzędzie wizualne (typu node-based), gdzie możesz spiąć Webhooki, API (np. Trello), bazy danych i LLM-y bez pisania ton kodu backendowego. Idealne do budowy wewnętrznych narzędzi dla działu Marketingu.'
+      },
+      {
+        term: 'Internal Tools > Drogie SaaS-y',
+        explanation: 'Zamiast płacić 1000$ miesięcznie za kolejne gotowe oprogramowanie B2B dla HR czy Sales, szybko budujesz im workflow w n8n, z podpiętym OpenAI, dając dokładnie to samo za 10$ miesięcznie.'
+      }
+    ],
+    quizzes: [
+      {
+        question: "Co powinieneś zrobić, gdy zauważysz powtarzalny, codzienny proces biznesowy?",
+        options: ["Zignorować go, bo nie jesteś z tego działu", "Zatrudnić stażystę", "Zbudować zautomatyzowany przepływ (np. w n8n), który to przejmie", "Zgłosić jako pomysł na dużą przebudowę architektury za rok"],
+        correct: 2
+      }
+    ]
   },
   {
     id: 'l7',
-    title: 'Business Impact & Prototyping',
+    title: 'Business Impact & Shipping Fast',
     category: 'Mindset',
     color: '#9CCC65',
     icon: 'Rocket',
-    content: `
-      <h3>Realny wpływ na biznes</h3>
-      <p>Budujesz narzędzia AI nie jako techniczne dema do portfolio, ale po to, by generować leady, ucinać koszty i przynosić realne pieniądze firmie.</p>
-      
-      <h3>Shipping Fast</h3>
-      <p>Przechodzenie od pomysłu do działającego rozwiązania w kilka dni (np. zbudowanie całej platformy akademii dla partnerów w 3 dni). Unifikacja różnych marek w jeden spójny ekosystem technologiczny.</p>
-      
-      <h3>Killing Ideas</h3>
-      <p>Szybkie prototypowanie oznacza też <strong>szybkie zabijanie własnych pomysłów</strong>. Jeśli po dwóch dniach widzisz, że eksperyment nie działa na rynku lub technologia zawodzi — usuwasz kod i idziesz dalej bez żalu.</p>
-      
-      <p><em>Pamiętaj: współpracujesz bezpośrednio z ludźmi nietechnicznymi (marketing, CEO) - nie potrzebujesz trzymania za rękę w środowisku wysokiego zaufania.</em></p>
-    `,
-    quiz: {
-      question: "Jak należy postąpić z prototypem aplikacji, który po 2 dniach testów wyraźnie nie przynosi rezultatów biznesowych?",
-      options: ["Refaktorować kod do perfekcji, aż zadziała", "Spróbować wdrożyć inną bibliotekę UI", "Szybko zabić projekt (kill the idea) i skupić się na czymś lepszym", "Wymagać od CEO napisania nowej specyfikacji"],
-      correct: 2
-    }
+    concepts: [
+      {
+        term: 'Shipping Fast (Wdrażanie w dni, nie miesiące)',
+        explanation: 'Akademia dla partnerów biznesowych nie musi powstawać przez pół roku. Z odpowiednim stackiem (AI + Next.js + v0) jesteś w stanie dowieźć działający, zarabiający produkt (lub prototyp) w 3 dni.'
+      },
+      {
+        term: 'The Art of Killing Ideas',
+        explanation: 'Zbudowałeś coś, ale nie przynosi to leadów ani nie oszczędza pieniędzy? Musisz umieć wyrzucić ten kod do kosza i ruszyć dalej. Skupiasz się na metrykach biznesowych, nie na tym, jak ładnie napisałeś klasę.'
+      },
+      {
+        term: 'Komunikacja Non-Technical',
+        explanation: 'Praca na najwyższym poziomie z AI polega na bezpośrednim kontakcie z założycielami, marketingowcami czy ekspertami domenowymi. Tłumaczysz im możliwości technologiczne na język ich celów (zysk, czas, zasięg), bez używania żargonu programistycznego.'
+      }
+    ],
+    quizzes: [
+      {
+        question: "Jak należy postąpić z prototypem aplikacji, który po paru dniach weryfikacji przez użytkowników jest bezużyteczny biznesowo?",
+        options: ["Refaktorować kod do perfekcji", "Szybko zabić projekt (kill the idea) i skupić się na czymś lepszym", "Wymagać od CEO napisania nowej specyfikacji", "Testować go dalej przez miesiąc"],
+        correct: 1
+      },
+      {
+        question: "Jaki jest główny cel pracy inżyniera AI w firmie produktowej wg tego profilu?",
+        options: ["Zdobywanie gwiazdek na GitHubie", "Pisanie skomplikowanych algorytmów uczenia maszynowego w Pythonie", "Generowanie realnego wpływu na biznes (oszczędności, leady, automatyzacje)", "Stworzenie frameworka lepszego niż React"],
+        correct: 2
+      }
+    ]
   }
 ];
