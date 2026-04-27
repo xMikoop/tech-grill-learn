@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Zap, Shield, Clock, Terminal, CheckCircle, ChevronRight, Trophy, ArrowLeft, Database, Brain, Workflow, Rocket, Unlock, Lock, Music, Play, Pause, Volume2, VolumeX, Loader2, Send, MessageSquare, BookOpen, Star, History, LayoutDashboard } from 'lucide-react';
+import { Zap, Shield, Clock, Terminal, CheckCircle, ChevronRight, Trophy, ArrowLeft, Database, Brain, Workflow, Rocket, Music, Play, Pause, Volume2, VolumeX, Loader2, Send, MessageSquare, BookOpen, Star, History, LayoutDashboard, LogOut } from 'lucide-react';
 import { lessons } from './data';
+import { auth, signInWithGoogle, logout } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const App = () => {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
@@ -22,14 +24,10 @@ const App = () => {
   const [linkInput, setLinkInput] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
 
-  // Auth state
-  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('tg_auth') === 'true');
-  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('tg_user') || '');
-  const [authStep, setAuthStep] = useState('email'); // 'email', 'verify', 'loading'
-  const [authEmail, setAuthEmail] = useState('');
-  const [authCode, setAuthCode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [authToast, setAuthToast] = useState('');
+  // Auth state — Firebase manages session automatically
+  const [authUser, setAuthUser] = useState(null); // null = loading, false = not logged in, object = logged in
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
 
   // Onboarding & Music state
   const [obForm, setObForm] = useState({ calm: '', energy: '', joy: '' });
@@ -55,18 +53,13 @@ const App = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
+  // Firebase Auth state listener — persists session across refreshes
   useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data?.type === 'GOOGLE_LOGIN_SUCCESS') {
-        const email = event.data.email;
-        setUserEmail(email);
-        setIsAuthenticated(true);
-        localStorage.setItem('tg_user', email);
-        localStorage.setItem('tg_auth', 'true');
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthUser(user || false);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -241,194 +234,76 @@ const App = () => {
     }
   };
 
-  const handleSendCode = () => {
-    if (!authEmail.includes('@')) return;
-    setAuthStep('loading');
-    setTimeout(() => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedCode(code);
-      setAuthStep('verify');
-      setAuthToast(`DEV MODE: Wysłano kod: ${code} na ${authEmail}`);
-      setTimeout(() => setAuthToast(''), 8000);
-    }, 1500);
-  };
-
-  const handleVerifyCode = () => {
-    if (authCode === generatedCode || authCode === '000000') {
-      setAuthStep('loading');
-      setTimeout(() => {
-        setUserEmail(authEmail);
-        setIsAuthenticated(true);
-        localStorage.setItem('tg_user', authEmail);
-        localStorage.setItem('tg_auth', 'true');
-      }, 1000);
-    } else {
-      setAuthToast('Nieprawidłowy kod weryfikacyjny.');
-      setTimeout(() => setAuthToast(''), 3000);
+  const handleGoogleLogin = async () => {
+    setAuthError('');
+    try {
+      await signInWithGoogle();
+      // onAuthStateChanged fires automatically after success
+    } catch (err) {
+      if (err.code === 'auth/popup-closed-by-user') {
+        setAuthError('Zamknięto okno logowania.');
+      } else if (err.code === 'auth/popup-blocked') {
+        setAuthError('Przeglądarka zablokowała popup. Zezwól na wyskakujące okna dla tej strony.');
+      } else {
+        setAuthError(`Błąd: ${err.message}`);
+      }
+      setTimeout(() => setAuthError(''), 5000);
     }
   };
 
-  const handleGoogleLogin = () => {
-    const width = 500;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    
-    const popup = window.open(
-      '', 
-      'GoogleLogin', 
-      `width=${width},height=${height},left=${left},top=${top}`
+  const handleLogout = async () => {
+    await logout();
+    localStorage.removeItem('tg_view');
+  };
+
+  // Show loading spinner while Firebase checks session
+  if (authLoading) {
+    return (
+      <div className="flex h-screen w-full bg-void items-center justify-center">
+        <Loader2 className="w-10 h-10 text-plasma animate-spin" />
+      </div>
     );
+  }
 
-    if (popup) {
-      popup.document.write(`
-        <html>
-          <head>
-            <title>Sign in - Google Accounts</title>
-            <style>
-              body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #fff; margin: 0; }
-              .container { border: 1px solid #dadce0; border-radius: 8px; padding: 40px; width: 350px; text-align: center; }
-              h1 { font-weight: 400; font-size: 24px; margin-bottom: 10px; font-family: Arial, sans-serif; }
-              p { color: #202124; font-size: 16px; margin-bottom: 30px; font-family: Arial, sans-serif; }
-              input { width: 100%; padding: 13px 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; margin-bottom: 40px; box-sizing: border-box; }
-              button { background: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; float: right; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <svg viewBox="0 0 74 24" width="74" height="24" style="margin-bottom: 16px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              <h1>Sign in</h1>
-              <p>Use your Google Account</p>
-              <input type="email" id="email" placeholder="Email or phone" />
-              <div style="text-align: left; color: #1a73e8; font-weight: 500; font-size: 14px; margin-top: -30px; margin-bottom: 40px; cursor: pointer; font-family: Arial, sans-serif;">Forgot email?</div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="color: #1a73e8; font-weight: 500; font-size: 14px; cursor: pointer; font-family: Arial, sans-serif;">Create account</div>
-                <button id="next">Next</button>
-              </div>
-            </div>
-            <script>
-              document.getElementById('next').onclick = () => {
-                const email = document.getElementById('email').value || 'google_user@gmail.com';
-                window.opener.postMessage({ type: 'GOOGLE_LOGIN_SUCCESS', email }, '*');
-                window.close();
-              };
-            </script>
-          </body>
-        </html>
-      `);
-    } else {
-      setAuthToast('Zezwól na wyskakujące okienka w przeglądarce.');
-      setTimeout(() => setAuthToast(''), 3000);
-    }
-  };
-
-  if (!isAuthenticated) {
+  if (!authUser) {
     return (
       <div className="flex h-screen w-full bg-void text-ghost font-sora items-center justify-center selection:bg-plasma selection:text-white relative overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,var(--color-plasma)_0%,transparent_25%)] opacity-[0.03] blur-[100px]" />
-        
-        {/* Toast */}
-        {authToast && (
-          <div className="absolute top-10 left-1/2 -translate-x-1/2 z-50 bg-plasma text-void px-6 py-3 rounded-full font-bold text-sm shadow-plasma-glow animate-fade-in border border-white/20 whitespace-nowrap">
-            {authToast}
+        <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(circle at center, rgba(100,220,255,0.04) 0%, transparent 60%)' }} />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-plasma/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-[100px]" />
+
+        {authError && (
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg animate-fade-in border border-red-400/30 whitespace-nowrap">
+            {authError}
           </div>
         )}
 
-        <div className="w-full max-w-md z-10 glass-panel p-8 rounded-3xl border border-plasma/30 shadow-2xl relative">
-          
+        <div className="w-full max-w-sm z-10 p-10 rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-2xl">
           <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-plasma-glow bg-void overflow-hidden border border-plasma/50">
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-plasma/40 shadow-plasma-glow">
+              <img src="/logo.png" alt="Tech Grill Logo" className="w-full h-full object-cover" />
             </div>
           </div>
-          
-          <h1 className="text-3xl font-black text-center mb-2 tracking-tighter">TECH GRILL</h1>
-          <p className="text-plasma text-center text-sm font-bold tracking-widest uppercase mb-8">Dostęp Wymagany</p>
 
-          {authStep === 'loading' && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="w-10 h-10 text-plasma animate-spin" />
-              <p className="text-plasmaLight font-bold tracking-widest uppercase text-sm">Autoryzacja...</p>
-            </div>
-          )}
+          <h1 className="text-4xl font-black text-center tracking-tighter mb-1">TECH GRILL</h1>
+          <p className="text-center text-plasma font-bold text-xs tracking-[0.3em] uppercase mb-10">Senior Dev Academy</p>
 
-          {authStep === 'email' && (
-            <div className="space-y-6 animate-fade-in">
-              <button 
-                onClick={handleGoogleLogin}
-                className="w-full bg-white/5 border border-white/10 hover:border-plasma/50 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-3 transition-all"
-              >
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                Zaloguj przez Google
-              </button>
-              
-              <div className="flex items-center gap-4 my-6">
-                <div className="flex-1 h-px bg-white/10"></div>
-                <div className="text-xs font-bold text-white/30 uppercase tracking-widest">LUB</div>
-                <div className="flex-1 h-px bg-white/10"></div>
-              </div>
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full group relative bg-white text-gray-800 font-semibold py-3.5 rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-[0.98] transition-all shadow-lg"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Kontynuuj z Google
+          </button>
 
-              <div>
-                <label className="block text-xs font-bold tracking-widest text-plasma mb-2 uppercase">Adres Email</label>
-                <div className="relative">
-                  <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                  <input 
-                    type="email" 
-                    placeholder="Wpisz swój email..."
-                    value={authEmail}
-                    onChange={e => setAuthEmail(e.target.value)}
-                    className="w-full bg-void border border-white/10 rounded-xl pl-12 pr-4 py-3 text-ghost focus:outline-none focus:border-plasma transition-colors"
-                  />
-                </div>
-              </div>
-
-              <button 
-                onClick={handleSendCode}
-                disabled={!authEmail.includes('@')}
-                className="w-full bg-plasma text-void font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-plasmaLight transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                WYŚLIJ KOD DOSTĘPU <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-
-          {authStep === 'verify' && (
-            <div className="space-y-6 animate-fade-in">
-              <p className="text-center text-sm text-ghost/70">Wpisz 6-cyfrowy kod, który wysłaliśmy na adres <br/><span className="text-plasma font-bold">{authEmail}</span></p>
-              
-              <div>
-                <label className="block text-xs font-bold tracking-widest text-plasma mb-2 uppercase">Kod Weryfikacyjny</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
-                  <input 
-                    type="text" 
-                    placeholder="______"
-                    maxLength={6}
-                    value={authCode}
-                    onChange={e => setAuthCode(e.target.value)}
-                    className="w-full bg-void border border-white/10 rounded-xl pl-12 pr-4 py-3 text-ghost text-center text-2xl tracking-[1em] font-mono focus:outline-none focus:border-plasma transition-colors"
-                  />
-                </div>
-              </div>
-
-              <button 
-                onClick={handleVerifyCode}
-                disabled={authCode.length < 6}
-                className="w-full bg-plasma text-void font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-plasmaLight transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                AUTORYZUJ <Unlock className="w-5 h-5" />
-              </button>
-              
-              <button 
-                onClick={() => setAuthStep('email')}
-                className="w-full text-xs font-bold text-white/40 hover:text-white transition-colors"
-              >
-                WRÓĆ DO ZMIANY EMAILA
-              </button>
-            </div>
-          )}
-
+          <p className="text-center text-white/20 text-xs mt-8 leading-relaxed">
+            Weryfikacja przez prawdziwe konto Google.<br/>Żadnych danych nie przechowujemy bez Twojej zgody.
+          </p>
         </div>
       </div>
     );
@@ -497,14 +372,29 @@ const App = () => {
       {/* SIDEBAR (Inlined to prevent input focus loss) */}
       {view !== 'onboarding' && (
         <aside className="w-80 bg-void border-r border-white/5 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0">
-          <div className="p-6 border-b border-white/5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-plasma-glow bg-void overflow-hidden border border-plasma/30">
-              <img src="/logo.png" alt="Tech Grill Logo" className="w-full h-full object-cover" />
+          <div className="p-5 border-b border-white/5 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-plasma/30 shrink-0 bg-void">
+              {authUser?.photoURL ? (
+                <img src={authUser.photoURL} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <img src="/logo.png" alt="Tech Grill Logo" className="w-full h-full object-cover" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="font-black text-xl tracking-tighter leading-none truncate">TECH GRILL</h1>
-              <h2 className="text-plasma text-[10px] font-bold tracking-widest uppercase truncate">{userEmail || 'Academy'}</h2>
+              <h1 className="font-black text-base tracking-tighter leading-none truncate">
+                {authUser?.displayName || 'TECH GRILL'}
+              </h1>
+              <h2 className="text-plasma text-[10px] font-bold tracking-widest uppercase truncate">
+                {authUser?.email || 'Academy'}
+              </h2>
             </div>
+            <button 
+              onClick={handleLogout} 
+              title="Wyloguj"
+              className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="p-6 border-b border-white/5">
