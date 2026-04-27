@@ -48,7 +48,12 @@ const App = () => {
     energy: '', 
     joy: '' 
   });
-  const [activeAtmosphere, setActiveAtmosphere] = useState(null);
+  const [activeAtmosphere, setActiveAtmosphere] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tg_atmosphere');
+      return saved ? JSON.parse(saved) : null;
+    } catch(e) { return null; }
+  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const [musicConfig, setMusicConfig] = useState(() => {
@@ -120,7 +125,10 @@ const App = () => {
     if (musicConfig) {
       localStorage.setItem('tg_music', JSON.stringify(musicConfig));
     }
-  }, [musicConfig]);
+    if (activeAtmosphere) {
+      localStorage.setItem('tg_atmosphere', JSON.stringify(activeAtmosphere));
+    }
+  }, [musicConfig, activeAtmosphere]);
 
 
   const addXp = (amount, achievement) => {
@@ -444,15 +452,16 @@ const App = () => {
       {/* Dynamic Atmosphere Background Elements */}
       {activeAtmosphere?.animation === 'satellites' && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="satellite-1 w-2 h-2 bg-plasma/40 rounded-full blur-sm absolute top-1/4 left-1/4 animate-float" />
-          <div className="satellite-2 w-3 h-3 bg-plasma/20 rounded-full blur-md absolute bottom-1/3 right-1/4 animate-float" style={{ animationDelay: '-3s' }} />
+          <div className="w-2 h-2 bg-plasma/40 rounded-full blur-sm absolute top-1/4 left-1/4 animate-float" />
+          <div className="w-3 h-3 bg-plasma/20 rounded-full blur-md absolute bottom-1/3 right-1/4 animate-float" style={{ animationDelay: '-3s' }} />
+          <div className="gravity-wave w-64 h-64 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10" />
         </div>
       )}
 
       {activeAtmosphere?.animation === 'clouds' && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 opacity-30">
-          <div className="w-[500px] h-[500px] bg-green-neon/5 rounded-full blur-[120px] absolute -top-40 -left-40 animate-pulse-slow" />
-          <div className="w-[400px] h-[400px] bg-green-neon/5 rounded-full blur-[100px] absolute -bottom-20 -right-20 animate-pulse-slow" style={{ animationDelay: '-4s' }} />
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="w-[500px] h-[500px] bg-plasma/10 rounded-full blur-[120px] absolute -top-40 -left-40 animate-pulse-slow" />
+          <div className="w-[400px] h-[400px] bg-plasma/10 rounded-full blur-[100px] absolute -bottom-20 -right-20 animate-pulse-slow" style={{ animationDelay: '-4s' }} />
         </div>
       )}
       {musicConfig && (
@@ -578,6 +587,9 @@ const App = () => {
             </button>
             <button onClick={() => setView('history')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm ${view === 'history' ? 'bg-plasma text-void shadow-plasma-glow' : 'text-ghost/70 hover:bg-white/5 hover:text-ghost'}`}>
               <History className="w-5 h-5" /> Historia
+            </button>
+            <button onClick={() => { setView('onboarding'); setActiveAtmosphere(null); localStorage.removeItem('tg_atmosphere'); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm text-red-400/70 hover:bg-red-400/10 hover:text-red-400">
+              <Zap className="w-5 h-5" /> Resetuj Profil AI
             </button>
           </div>
 
