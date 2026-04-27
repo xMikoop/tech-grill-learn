@@ -9,11 +9,13 @@ import {
   LogOut,
   Send,
   Loader2,
+  Flame,
 } from 'lucide-react';
 
 const Sidebar = ({
   authUser,
   xp,
+  streak,
   completedModules,
   lessons,
   view,
@@ -38,13 +40,23 @@ const Sidebar = ({
             {authUser?.email || 'Academy'}
           </h2>
         </div>
-        <button
-          onClick={handleLogout}
-          title="Wyloguj"
-          className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all shrink-0"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Streak Badge */}
+          {streak > 0 && (
+            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400"
+                 title={`${streak}-dniowa seria!`}>
+              <Flame className="w-3.5 h-3.5 fill-orange-400" />
+              <span className="text-xs font-black">{streak}</span>
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            title="Wyloguj"
+            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div className="p-6 border-b border-white/5 pointer-events-auto">

@@ -1,95 +1,109 @@
-const DEFAULT_SYSTEM_PROMPT = `Jesteś Mentorem Tech Grill Academy. Odpowiadasz po polsku, konkretnie i merytorycznie.
-Gdy to możliwe, nawiązuj do materiałów kursu.
-Jeśli czegoś nie wiesz, przyznaj to i zaproponuj następny krok.`;
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-export function findConceptInLessons(input, lessons) {
+// Build a RAG context string from matching lessons
+function buildRagContext(input, lessons) {
   const lowered = input.toLowerCase();
-  const searchTerms = lowered
-    .replace(/wyjaśnij|wytłumacz|co to jest|mi|proszę|prosze/g, '')
+  const terms = lowered
+    .replace(/wyjaśnij|wytłumacz|co to jest|mi|proszę|jak działa/g, '')
     .split(/\s+/)
-    .map((word) => word.trim())
-    .filter((word) => word.length > 2);
+    .map((w) => w.trim())
+    .filter((w) => w.length > 2);
 
-  if (searchTerms.length === 0) return null;
+  const matches = [];
 
   for (const lesson of lessons) {
     for (const concept of lesson.concepts ?? []) {
-      const conceptTerm = concept.term?.toLowerCase() ?? '';
-      const match = searchTerms.some((term) => conceptTerm.includes(term));
-      if (!match) continue;
-
-      const textOnly = (concept.explanation ?? '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      return {
-        term: concept.term,
-        lessonTitle: lesson.title,
-        snippet: `${textOnly.substring(0, 320)}${textOnly.length > 320 ? '…' : ''}`,
-      };
+      const term = concept.term?.toLowerCase() ?? '';
+      const explanation = (concept.explanation ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      const isMatch = terms.some((t) => term.includes(t) || explanation.toLowerCase().includes(t));
+      if (isMatch) {
+        matches.push(`[${lesson.title}] ${concept.term}: ${explanation.substring(0, 400)}`);
+      }
     }
+    if (matches.length >= 3) break;
   }
 
-  return null;
+  return matches.length > 0
+    ? `Kontekst z bazy wiedzy Tech Grill Academy:\n${matches.join('\n\n')}`
+    : '';
 }
 
-function fallbackMentorResponse(input, lessons) {
-  const lowered = input.toLowerCase();
+const SYSTEM_INSTRUCTION = `Jesteś "Tech Grill Mentor" — precyzyjnym, wymagającym mentorem dla Senior Developerów.
+Odpowiadasz wyłącznie po polsku. Bądź konkretny i merytoryczny. Unikaj wstępów i fraz takich jak "Oczywiście!".
+Gdy masz kontekst z bazy wiedzy, opieraj się na nim. Gdy czegoś nie wiesz — przyznaj to.
+Format: używaj krótkich akapitów. Kod wstawiaj w backtickach.`;
 
-  if (lowered.includes('llm') || lowered.includes('qwen') || lowered.includes('model') || lowered.includes('ai')) {
-    return 'SLM/LLM dobieraj do zadania: lokalne modele (np. Qwen Coder) świetnie działają do inferencji edge i obniżania kosztów, a większe modele zostaw do złożonego reasoning-u.';
-  }
+export async function getMentorResponse({ input, chatHistory = [], lessons = [] }) {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-  const concept = findConceptInLessons(input, lessons);
-  if (concept) {
-    return `Z bazy wiedzy (${concept.term}):\n\n${concept.snippet}\n\nPełny kontekst znajdziesz w module „${concept.lessonTitle}”.`;
-  }
+  const ragContext = buildRagContext(input, lessons);
 
-  return 'Nie mam jeszcze precyzyjnej odpowiedzi dla tego pytania. Spróbuj doprecyzować temat (np. „wyjaśnij LCP w React”).';
-}
+  const userMessageWithContext = ragContext
+    ? `${ragContext}\n\n---\nPytanie użytkownika: ${input}`
+    : input;
 
-export async function getMentorResponse({
-  input,
-  chatHistory,
-  lessons,
-  endpoint = import.meta.env.VITE_MENTOR_API_URL,
-  apiKey = import.meta.env.VITE_MENTOR_API_KEY,
-  model = import.meta.env.VITE_MENTOR_MODEL,
-}) {
-  if (!endpoint) {
-    return fallbackMentorResponse(input, lessons);
+  // Build conversation history for Gemini
+  const geminiHistory = chatHistory
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .slice(-10)
+    .map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.text }],
+    }));
+
+  // If no API key, use fallback
+  if (!apiKey) {
+    return findConceptInLessons(input, lessons)
+      ? `Z bazy wiedzy: ${buildRagContext(input, lessons) || 'Brak dopasowania. Spróbuj doprecyzować pytanie.'}`
+      : 'Dodaj klucz VITE_GEMINI_API_KEY do .env.local, aby włączyć prawdziwego AI Mentora. Na razie pracuję w trybie offline.';
   }
 
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model,
-        systemPrompt: DEFAULT_SYSTEM_PROMPT,
-        message: input,
-        history: chatHistory.slice(-12),
+        system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+        contents: [
+          ...geminiHistory,
+          { role: 'user', parts: [{ text: userMessageWithContext }] },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 512,
+        },
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Mentor API error: ${response.status}`);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
-    const payload = await response.json();
-    const text = payload?.response ?? payload?.message ?? payload?.text;
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!text || typeof text !== 'string') {
-      throw new Error('Mentor API returned empty response');
-    }
-
+    if (!text) throw new Error('Empty response from Gemini');
     return text.trim();
-  } catch (error) {
-    console.warn('Mentor API unavailable, fallback engaged:', error);
-    return fallbackMentorResponse(input, lessons);
+  } catch (err) {
+    console.warn('Gemini unavailable, fallback:', err.message);
+    const ctx = buildRagContext(input, lessons);
+    return ctx
+      ? `[Tryb offline]\n\n${ctx}`
+      : 'Mentor tymczasowo niedostępny. Sprawdź połączenie lub klucz API.';
   }
 }
+
+// Keep for direct use if needed
+export function findConceptInLessons(input, lessons) {
+  const lowered = input.toLowerCase();
+  const terms = lowered.split(/\s+/).filter((w) => w.length > 2);
+  for (const lesson of lessons) {
+    for (const concept of lesson.concepts ?? []) {
+      if (terms.some((t) => concept.term?.toLowerCase().includes(t))) {
+        return concept;
+      }
+    }
+  }
+  return null;
+}
+

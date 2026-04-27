@@ -52,6 +52,10 @@ const App = () => {
   const musicConfig = useAppStore((state) => state.musicConfig);
   const setMusicConfig = useAppStore((state) => state.setMusicConfig);
   const resetSessionState = useAppStore((state) => state.resetSessionState);
+  const streak = useAppStore((state) => state.streak);
+  const completedLessons = useAppStore((state) => state.completedLessons);
+  const markLessonCompleted = useAppStore((state) => state.markLessonCompleted);
+  const checkAndUpdateStreak = useAppStore((state) => state.checkAndUpdateStreak);
 
   // Lesson state
   const [unlockedConcepts, setUnlockedConcepts] = useState({});
@@ -160,13 +164,17 @@ const App = () => {
       setAuthUser(user || false);
       setAuthLoading(false);
       clearTimeout(timeout);
+      if (user) {
+        // Update streak on every login/session start
+        checkAndUpdateStreak();
+      }
     });
 
     return () => {
       unsubscribe();
       clearTimeout(timeout);
     };
-  }, []);
+  }, [checkAndUpdateStreak]);
 
   // Flaga blokująca pętlę między efektami route↔state
   const isSyncingRef = useRef(false);
@@ -665,7 +673,8 @@ const App = () => {
         <Sidebar
           authUser={authUser}
           xp={xp}
-          completedModules={completedModules}
+          streak={streak}
+          completedModules={completedLessons}
           lessons={lessons}
           view={view}
           setView={setView}
@@ -700,6 +709,9 @@ const App = () => {
             lessons={lessons}
             handleLessonStart={handleLessonStart}
             renderIcon={renderIcon}
+            completedLessons={completedLessons}
+            streak={streak}
+            xp={xp}
           />
         )}
 
