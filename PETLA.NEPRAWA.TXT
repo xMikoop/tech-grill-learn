@@ -1,0 +1,43 @@
+RAPORT O BŁĘDZIE: PĘTLA SYNCHRONIZACJI ROUTINGU
+=============================================
+
+DATA: 2026-04-27
+STATUS: NAPRAWIONO (FIXED)
+PLIK Z BŁĘDEM: src/App.jsx, src/lib/viewRouting.js
+
+1. OPIS BŁĘDU (CO TO ZA BŁĄD)
+-----------------------------
+Błąd objawiał się tzw. "mruganiem" (flashing) interfejsu, wynikającym z nieskończonej pętli re-renderów. Aplikacja gwałtownie przełączała się między widokiem 'onboarding' a 'dashboard'. 
+
+Technicznie była to "Pętla Synchronizacji Stanu" (State Synchronization Loop). W React występuje ona, gdy dwa efekty (useEffect) nawzajem wyzwalają swoje wykonanie.
+
+2. GDZIE TO BYŁO (LOKALIZACJA)
+------------------------------
+Błąd znajdował się w głównym pliku `src/App.jsx` w dwóch blokach `useEffect` odpowiedzialnych za routing:
+
+- Efekt A (Route -> State): Nasłuchiwał na zmiany adresu URL (`location.pathname`) oraz stanu widoku (`view`). Gdy URL wskazywał na '/', ustawiał widok na 'onboarding'.
+- Efekt B (State -> Route): Nasłuchiwał na zmiany stanu widoku (`view`) oraz adresu URL (`location.pathname`). Gdy widok był ustawiony na 'onboarding', nawigował do '/onboarding'.
+
+Problem pogłębiał fakt, że w `src/lib/viewRouting.js` ścieżka '/' była sztywno przypisana do 'onboarding', nie biorąc pod uwagę czy użytkownik jest już po procesie onboardingu i ma zapisaną "atmosferę" w Firestore/Zustand.
+
+3. JAK TO ZNALAZŁEM (DIAGNOSTYKA)
+---------------------------------
+- Analiza objawów: "Miganie" i 20-krotne zmiany widoku to klasyczny objaw wyścigu (race condition) między dwoma źródłami prawdy (URL vs State).
+- Inspekcja zależności: Zauważyłem, że oba efekty w `App.jsx` miały w tablicy zależności (`dependency array`) te same wartości: `location.pathname` oraz `view`. 
+- Logika: 
+  1. URL zmieniał View.
+  2. Zmiana View odpalała drugi efekt.
+  3. Drugi efekt zmieniał URL (nawigacja).
+  4. Zmiana URL odpalała pierwszy efekt... i tak w kółko.
+
+4. ROZWIĄZANIE (FIX)
+--------------------
+1. Rozdzielenie Zależności (Decoupling): 
+   - Efekt A (URL -> Stan) teraz nasłuchuje TYLKO na zmiany URL. Sprawdza czy stan wymaga aktualizacji, ale nie reaguje na same zmiany stanu.
+   - Efekt B (Stan -> URL) teraz nasłuchuje TYLKO na zmiany stanu (View). Wykonuje nawigację tylko jeśli obecny adres URL faktycznie różni się od docelowego.
+2. Kontekstowy Routing: Zaktualizowałem `viewFromPath`, aby przyjmował parametr `hasAtmosphere`. Dzięki temu ścieżka '/' inteligentnie kieruje do Dashboardu, jeśli użytkownik ma już profil, zapobiegając próbom powrotu do Onboardingu.
+3. Fix Składniowy: Usunięto podwójną deklarację zmiennej `normalized` w `viewRouting.js`, która blokowała kompilację.
+
+5. WNIOSKI
+----------
+Przy ręcznej synchronizacji stanu z adresem URL zawsze należy dbać o to, aby dany efekt miał tylko jedno "źródło napędowe" (albo URL, albo Stan), a nie oba naraz.
