@@ -545,7 +545,7 @@ const App = () => {
 
       {/* Globalny widget muzyczny */}
       {musicConfig && view !== 'onboarding' && (
-        <div className="fixed bottom-6 right-6 z-[9000] glass-dark p-3 rounded-full flex items-center gap-3 border border-plasma/30 shadow-plasma-glow relative z-[9000]">
+        <div className="fixed bottom-6 right-6 z-[9000] glass-dark p-3 rounded-full flex items-center gap-3 border border-plasma/30 shadow-plasma-glow">
           <div className="w-8 h-8 rounded-full bg-plasma/20 flex items-center justify-center">
             {isPlaying ? (
               <Music className="w-4 h-4 text-plasma animate-pulse" />
