@@ -24,6 +24,7 @@ const App = () => {
 
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('tg_auth') === 'true');
+  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('tg_user') || '');
   const [authStep, setAuthStep] = useState('email'); // 'email', 'verify', 'loading'
   const [authEmail, setAuthEmail] = useState('');
   const [authCode, setAuthCode] = useState('');
@@ -53,6 +54,20 @@ const App = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.type === 'GOOGLE_LOGIN_SUCCESS') {
+        const email = event.data.email;
+        setUserEmail(email);
+        setIsAuthenticated(true);
+        localStorage.setItem('tg_user', email);
+        localStorage.setItem('tg_auth', 'true');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('tg_view', view);
@@ -242,7 +257,9 @@ const App = () => {
     if (authCode === generatedCode || authCode === '000000') {
       setAuthStep('loading');
       setTimeout(() => {
+        setUserEmail(authEmail);
         setIsAuthenticated(true);
+        localStorage.setItem('tg_user', authEmail);
         localStorage.setItem('tg_auth', 'true');
       }, 1000);
     } else {
@@ -252,11 +269,57 @@ const App = () => {
   };
 
   const handleGoogleLogin = () => {
-    setAuthStep('loading');
-    setTimeout(() => {
-      setIsAuthenticated(true);
-      localStorage.setItem('tg_auth', 'true');
-    }, 1500);
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    
+    const popup = window.open(
+      '', 
+      'GoogleLogin', 
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    if (popup) {
+      popup.document.write(`
+        <html>
+          <head>
+            <title>Sign in - Google Accounts</title>
+            <style>
+              body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #fff; margin: 0; }
+              .container { border: 1px solid #dadce0; border-radius: 8px; padding: 40px; width: 350px; text-align: center; }
+              h1 { font-weight: 400; font-size: 24px; margin-bottom: 10px; font-family: Arial, sans-serif; }
+              p { color: #202124; font-size: 16px; margin-bottom: 30px; font-family: Arial, sans-serif; }
+              input { width: 100%; padding: 13px 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; margin-bottom: 40px; box-sizing: border-box; }
+              button { background: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; float: right; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <svg viewBox="0 0 74 24" width="74" height="24" style="margin-bottom: 16px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              <h1>Sign in</h1>
+              <p>Use your Google Account</p>
+              <input type="email" id="email" placeholder="Email or phone" />
+              <div style="text-align: left; color: #1a73e8; font-weight: 500; font-size: 14px; margin-top: -30px; margin-bottom: 40px; cursor: pointer; font-family: Arial, sans-serif;">Forgot email?</div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: #1a73e8; font-weight: 500; font-size: 14px; cursor: pointer; font-family: Arial, sans-serif;">Create account</div>
+                <button id="next">Next</button>
+              </div>
+            </div>
+            <script>
+              document.getElementById('next').onclick = () => {
+                const email = document.getElementById('email').value || 'google_user@gmail.com';
+                window.opener.postMessage({ type: 'GOOGLE_LOGIN_SUCCESS', email }, '*');
+                window.close();
+              };
+            </script>
+          </body>
+        </html>
+      `);
+    } else {
+      setAuthToast('Zezwól na wyskakujące okienka w przeglądarce.');
+      setTimeout(() => setAuthToast(''), 3000);
+    }
   };
 
   if (!isAuthenticated) {
@@ -438,9 +501,9 @@ const App = () => {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-plasma-glow bg-void overflow-hidden border border-plasma/30">
               <img src="/logo.png" alt="Tech Grill Logo" className="w-full h-full object-cover" />
             </div>
-            <div>
-              <h1 className="font-black text-xl tracking-tighter leading-none">TECH GRILL</h1>
-              <h2 className="text-plasma text-sm font-bold tracking-widest uppercase">Academy</h2>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-black text-xl tracking-tighter leading-none truncate">TECH GRILL</h1>
+              <h2 className="text-plasma text-[10px] font-bold tracking-widest uppercase truncate">{userEmail || 'Academy'}</h2>
             </div>
           </div>
 
