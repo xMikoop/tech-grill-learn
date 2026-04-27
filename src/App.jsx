@@ -126,35 +126,45 @@ const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet }) => {
   useEffect(() => {
     if (!cameraRef.current || !active) return;
     
+    // Zatrzymujemy poprzednie animacje, ale NIE resetujemy wartości kamery
     if (animationRef.current) animationRef.current.kill();
 
-    const ctx = gsap.context(() => {
-      if (focusedPlanet) {
-        // Przybliżenie do konkretnego obiektu
-        const targets = {
-          sun: { x: 400, y: 300, z: -400, rx: -10, ry: -10 },
-          saturn: { x: 300, y: -200, z: 0, rx: 5, ry: 15 },
-          jupiter: { x: -400, y: 100, z: 300, rx: 0, ry: -20 },
-          black_hole: { x: -400, y: -400, z: -100, rx: 20, ry: -10 },
-          earth: { x: 0, y: -400, z: 700, rx: 15, ry: 0 }
-        };
+    const targets = {
+      sun: { x: 400, y: 300, z: -400, rx: -10, ry: -10 },
+      saturn: { x: 300, y: -200, z: 0, rx: 5, ry: 15 },
+      jupiter: { x: -400, y: 100, z: 300, rx: 0, ry: -20 },
+      black_hole: { x: -400, y: -400, z: -100, rx: 20, ry: -10 },
+      earth: { x: 0, y: -400, z: 700, rx: 15, ry: 0 }
+    };
 
-        const t = targets[focusedPlanet];
-        gsap.to(cameraRef.current, {
-          x: t.x, y: t.y, z: t.z,
-          rotationX: t.rx, rotationY: t.ry,
-          duration: 2, ease: "power3.inOut"
-        });
-      } else {
-        // Standardowy ruch jałowy
-        animationRef.current = gsap.to(cameraRef.current, {
-          rotationY: 8, rotationX: 2, x: 40, z: 50,
-          duration: 25, repeat: -1, yoyo: true, ease: "sine.inOut"
-        });
-      }
-    });
+    if (focusedPlanet) {
+      const t = targets[focusedPlanet];
+      animationRef.current = gsap.to(cameraRef.current, {
+        x: t.x, y: t.y, z: t.z,
+        rotationX: t.rx, rotationY: t.ry,
+        duration: 2.5, 
+        ease: "power2.inOut",
+        overwrite: true // Ważne dla płynności
+      });
+    } else {
+      // Powrót do ruchu jałowego z obecnej pozycji
+      animationRef.current = gsap.to(cameraRef.current, {
+        rotationY: 8, rotationX: 2, x: 40, z: 50,
+        duration: 4, 
+        ease: "power2.inOut",
+        onComplete: () => {
+          // Gdy wróci do bazy, włącz zapętlony ruch
+          animationRef.current = gsap.to(cameraRef.current, {
+            rotationY: 12, rotationX: 4, x: 60,
+            duration: 25, repeat: -1, yoyo: true, ease: "sine.inOut"
+          });
+        }
+      });
+    }
 
-    return () => ctx.revert();
+    return () => {
+      if (animationRef.current) animationRef.current.kill();
+    };
   }, [active, focusedPlanet]);
 
   return (

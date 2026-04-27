@@ -72,46 +72,71 @@
   position: absolute;
   border-radius: 50%;
   transform-style: preserve-3d;
-  box-shadow: inset -20px -20px 50px rgba(0,0,0,0.8);
-  pointer-events: auto; /* Pozwala klikać w planety */
+  pointer-events: auto;
   cursor: pointer;
   transition: filter 0.3s ease;
+  /* Efekt sferyczności przez oświetlenie */
+  background-size: 200% 200%;
 }
 
-.planet:hover {
-  filter: brightness(1.2) saturate(1.2);
+.planet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .jovian {
   width: 400px; height: 400px;
-  background: radial-gradient(circle at 30% 30%, #f3e5ab, #e1ad21 40%, #8b4513 80%);
+  background: radial-gradient(circle at 35% 35%, #f3e5ab 0%, #e1ad21 40%, #8b4513 80%, #201005 100%);
+  box-shadow: 0 0 60px rgba(225, 173, 33, 0.2), inset -30px -30px 60px rgba(0,0,0,0.9);
 }
 
 .saturn {
   width: 180px; height: 180px;
-  background: radial-gradient(circle at 30% 30%, #dfd3a3, #b5a642);
+  background: radial-gradient(circle at 35% 35%, #dfd3a3 0%, #b5a642 50%, #4a452a 100%);
+  box-shadow: 0 0 40px rgba(181, 166, 66, 0.2), inset -15px -15px 40px rgba(0,0,0,0.9);
 }
 
 .saturn-rings {
   position: absolute;
   top: 50%; left: 50%;
-  width: 400px; height: 80px;
-  border: 20px solid rgba(181, 166, 66, 0.1);
+  width: 450px; height: 90px;
+  border: 25px solid rgba(181, 166, 66, 0.15);
   border-radius: 50%;
-  transform: translate(-50%, -50%) rotateX(80deg);
+  transform: translate(-50%, -50%) rotateX(75deg);
+  box-shadow: 0 0 30px rgba(181, 166, 66, 0.1);
 }
 
 .sun {
   width: 600px; height: 600px;
-  background: radial-gradient(circle, #fff 0%, #ffcc00 20%, #ff6600 50%, transparent 80%);
-  box-shadow: 0 0 150px 60px #ffaa00;
+  background: radial-gradient(circle at center, #fff 0%, #fff 5%, #ffcc00 20%, #ff6600 50%, transparent 75%);
+  box-shadow: 0 0 200px 80px #ffaa00, inset 0 0 100px #fff;
+}
+
+.earth {
+  box-shadow: 0 0 30px rgba(75, 156, 211, 0.3), inset -10px -10px 30px rgba(0,0,0,0.8);
 }
 
 .black-hole-core {
-  width: 150px; height: 150px;
+  width: 160px; height: 160px;
   background: #000;
   border-radius: 50%;
   box-shadow: 0 0 60px 10px #fff, 0 0 120px 30px var(--color-plasma);
+  position: relative;
+}
+
+.black-hole-core::before {
+  content: '';
+  position: absolute;
+  inset: -100px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, var(--color-plasma), white, var(--color-plasma), transparent);
+  opacity: 0.3;
+  animation: spin 4s linear infinite;
+  filter: blur(20px);
 }
 
 .black-hole {
