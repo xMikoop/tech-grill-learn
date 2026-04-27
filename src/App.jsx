@@ -11,14 +11,18 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 const App = () => {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
-  const [xp, setXp] = useState(() => parseInt(localStorage.getItem('tg_xp') || '0'));
+  const [xp, setXp] = useState(() => {
+    try { return parseInt(localStorage.getItem('tg_xp') || '0'); } catch(e) { return 0; }
+  });
   const [view, setView] = useState(() => localStorage.getItem('tg_view') || 'onboarding');
   
   // Lesson state
   const [unlockedConcepts, setUnlockedConcepts] = useState({});
   const [completedModules, setCompletedModules] = useState(() => {
-    const saved = localStorage.getItem('tg_completed');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('tg_completed');
+      return saved ? JSON.parse(saved) : [];
+    } catch(e) { return []; }
   });
   
   // Quiz state
@@ -48,8 +52,10 @@ const App = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const [musicConfig, setMusicConfig] = useState(() => {
-    const saved = localStorage.getItem('tg_music');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('tg_music');
+      return saved ? JSON.parse(saved) : null;
+    } catch(e) { return null; }
   }); 
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -319,8 +325,8 @@ const App = () => {
   // Show loading spinner while Firebase checks session
   if (authLoading) {
     return (
-      <div className="flex h-screen w-full bg-void items-center justify-center">
-        <Loader2 className="w-10 h-10 text-plasma animate-spin" />
+      <div className="flex h-screen w-full bg-[#030303] items-center justify-center">
+        <Loader2 className="w-10 h-10 text-[#7B61FF] animate-spin" />
       </div>
     );
   }
