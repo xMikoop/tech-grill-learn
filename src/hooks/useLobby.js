@@ -28,7 +28,8 @@ export const useLobby = () => {
       
       engine.join('global-universe', {
         uid: uid,
-        displayName: user.displayName || 'Anonimowy Odkrywca'
+        displayName: user.displayName || 'Anonimowy Odkrywca',
+        avatarUrl: user.avatarUrl
       }).then(() => {
         console.log('Successfully joined lobby as:', uid);
       }).catch(err => {
