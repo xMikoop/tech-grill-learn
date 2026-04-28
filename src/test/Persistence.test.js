@@ -20,14 +20,14 @@ describe('Self-Persistent Progression Module', () => {
   it('should automatically trigger saveUserProgress when XP changes and userId is present', async () => {
     const state = useAppStore.getState();
     
-    // 1. Set userId first
-    act(() => {
-        state.initializeUser('test-user-123');
+    // 1. Set userId first - MUST wait for async initialization
+    await act(async () => {
+        await state.initializeUser('test-user-123');
     });
 
-    // 2. Change XP
+    // 2. Change XP to a NEW value (must be different from mocked 500)
     act(() => {
-        state.setXp(500);
+        state.setXp(600);
     });
 
     // Fast-forward debounce time (1000ms)
@@ -35,7 +35,7 @@ describe('Self-Persistent Progression Module', () => {
         vi.advanceTimersByTime(1500);
     });
 
-    expect(saveUserProgress).toHaveBeenCalledWith('test-user-123', expect.objectContaining({ xp: 500 }));
+    expect(saveUserProgress).toHaveBeenCalledWith('test-user-123', expect.objectContaining({ xp: 600 }));
   });
 
   it('should NOT trigger saveUserProgress if userId is missing', async () => {

@@ -1,20 +1,36 @@
-# Tech Grill Learn - TODO
+# Tech Grill Academy - Dependency Graph TODO
 
-## Phase 5: PWA & Performance
-- [x] Task 9: Service Worker v2 (Stale-While-Revalidate)
-- [x] Task 10: Performance Profiling & Optimization (Touch Engine 60 FPS)
+## Status: RECOVERING (Build Fixed, 39/40 Tests Green)
 
-## Phase 6: Social Learning (Real-time Lobby)
-- [x] Task 11: LobbyEngine Infrastructure & Tracer Bullet (Ghost Cube)
-    - [x] 11.1: SocialProvider Interface & EventEmitter Mock
-    - [x] 11.2: useLobbyStore (Reactive List + Imperative Map for Positions)
-    - [x] 11.3: LobbyEngine logic (Event handling & Store syncing)
-    - [x] 11.4: Universe3D Ghost Rendering (Lerp smoothing)
-    - [x] 11.5: RTDB Firebase Implementation (Presence & onDisconnect)
+[ROOT]
+  |
+  +-- [A] Fix Foundation (Build & Stability) [DONE]
+  |
+  +-- [B] Fix Persistence (Async Hydration in Tests) [IN_PROGRESS]
+  |     |
+  |     +-- [C] LobbyEngine & SocialProvider Robustness [NEXT]
+  |           |
+  |           +-- [D] TRACER BULLET: Global Chat implementation
+  |
+  +-- [E] Shared Design Concept Refinement (3D + Learning Overlay)
 
-## Phase 6: Social Learning (Task 12: Global Chat)
-- [ ] Task 12: Ephemeral Chat Tracer Bullet
-    - [ ] 12.1: [FIX] SocialProvider bug (replace set with update) & Add Chat broadcast [Refs: 11.5]
-    - [ ] 12.2: LobbyEngine: onMessageReceived integration & TDD tests [Refs: 11.3]
-    - [ ] 12.3: useLobbyStore: Add reactive message state [Refs: 11.2]
-    - [ ] 12.4: UI: Ghost Message Bubble implementation [Refs: 11.4]
+---
+
+## Task Details
+
+### [B] Fix Persistence
+- [ ] Fix `Persistence.test.js` (Handle async `initializeUser`)
+- [ ] Ensure `lastBaselineState` in `useAppStore` handles `userId` handover correctly
+
+### [C] Social Engine Robustness
+- [ ] Implement `onMessageReceived` in `FirebaseSocialProvider` (Done in code, need validation)
+- [ ] Add error boundaries to `LobbyEngine` event listeners
+
+### [D] TRACER BULLET: Global Chat
+- [ ] 12.1: SocialProvider: Add Chat broadcast & Update logic
+- [ ] 12.2: LobbyEngine: Integrate message handling
+- [ ] 12.3: UI: Ghost Message Bubbles (The "Wow" effect in 3D)
+
+### [E] Architecture Refactor
+- [ ] Extract `Universe3D` to a Persistent Layout (avoiding `App.jsx` bloat)
+- [ ] Move Routing logic from `useEffect` to `createBrowserRouter` (Standardization)
