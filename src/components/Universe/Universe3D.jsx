@@ -68,6 +68,41 @@ const StarField = React.memo(() => {
   );
 });
 
+const AtmosphereBubbles = React.memo(({ config }) => {
+  if (!config) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40 mix-blend-screen">
+      <div 
+        className="absolute w-[150%] h-[150%] -top-1/4 -left-1/4 animate-drift-slow"
+        style={{
+          background: `radial-gradient(circle at 30% 30%, ${config.accent}11 0%, transparent 40%),
+                       radial-gradient(circle at 70% 60%, ${config.accent}22 0%, transparent 50%),
+                       radial-gradient(circle at 20% 80%, ${config.accent}11 0%, transparent 40%)`,
+          filter: 'blur(80px)',
+        }}
+      />
+      {/* "Milky Bubbles" */}
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="absolute rounded-full animate-float-bubble"
+          style={{
+            width: `${200 + i * 100}px`,
+            height: `${200 + i * 100}px`,
+            left: `${10 + i * 20}%`,
+            top: `${20 + i * 15}%`,
+            background: `radial-gradient(circle at center, ${config.accent}15 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+            animationDelay: `${i * 2}s`,
+            animationDuration: `${15 + i * 5}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+});
+
 const SpaceShip = React.memo(({ reducedMotion = false }) => {
   const orbitRef = useRef(null);
 
@@ -139,7 +174,7 @@ const SpaceShip = React.memo(({ reducedMotion = false }) => {
   );
 });
 
-export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, reducedMotion = false, onPositionChange }) => {
+export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, reducedMotion = false, onPositionChange, atmosphere }) => {
   const cameraRef = useRef(null);
   const animationRef = useRef(null);
   const touchRef = useRef({ x: 0, y: 0, active: false });
@@ -291,6 +326,7 @@ export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, re
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
+      <AtmosphereBubbles config={atmosphere} />
       <div ref={cameraRef} className="universe-camera">
         <StarField />
         <SpaceShip reducedMotion={reducedMotion} />
