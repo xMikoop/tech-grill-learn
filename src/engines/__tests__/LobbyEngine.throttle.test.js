@@ -4,9 +4,11 @@ import { useLobbyStore } from '../../store/useLobbyStore';
 
 class MockSocialProvider {
   broadcastPosition(pos) {}
+  broadcastMessage(text) {}
   onPlayerJoined() {}
   onPlayerLeft() {}
   onPositionChanged() {}
+  onMessageReceived() {}
 }
 
 describe('LobbyEngine Throttling (Stress Test)', () => {

@@ -215,7 +215,8 @@ const Sidebar = ({
             <Zap className="w-3 h-3" /> Resetuj System AI
           </button>
         </div>
-      </aside>
+      </div>
+    </aside>
     </>
   );
 };

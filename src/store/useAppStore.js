@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { saveUserProgress, buildProgressPayload } from '../services/progressService';
+import { saveUserProgress, buildProgressPayload, loadUserProgress } from '../services/progressService';
+import { VALID_VIEWS } from '../lib/viewRouting';
 
 function createDefaultSessionState() {
   return {
@@ -161,19 +162,20 @@ export const useAppStore = create(
 
 // Persistence Side-Effect Engine (Internal to Module)
 let saveTimeout = null;
-useAppStore.subscribe((state, prevState) => {
-  if (!state.userId) return;
+let lastBaselineState = useAppStore.getState();
 
-  // Check if relevant data changed
-  const changed = 
-    state.xp !== prevState.xp ||
-    state.completedLessons !== prevState.completedLessons ||
-    state.achievements !== prevState.achievements ||
-    state.view !== prevState.view ||
-    state.musicConfig !== prevState.musicConfig ||
-    state.activeAtmosphere !== prevState.activeAtmosphere;
+useAppStore.subscribe((state) => {
+  // Check if relevant data changed compared to baseline
+  const hasDataChanged = 
+    state.xp !== lastBaselineState.xp ||
+    state.completedLessons !== lastBaselineState.completedLessons ||
+    state.achievements !== lastBaselineState.achievements ||
+    state.view !== lastBaselineState.view ||
+    state.musicConfig !== lastBaselineState.musicConfig ||
+    state.activeAtmosphere !== lastBaselineState.activeAtmosphere;
 
-  if (changed) {
+  // We only trigger save if there's a user AND data actually changed
+  if (hasDataChanged && state.userId && !state.isHydrating) {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
       saveUserProgress(state.userId, buildProgressPayload({
@@ -186,4 +188,7 @@ useAppStore.subscribe((state, prevState) => {
       }));
     }, 1000);
   }
+  
+  // Always update baseline to current state after check
+  lastBaselineState = state;
 });

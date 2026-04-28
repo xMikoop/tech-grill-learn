@@ -39,7 +39,7 @@ export const useLobby = () => {
     }
   }, [isLoaded, user, engine]);
 
-  return {
+  return useMemo(() => ({
     broadcastPosition: (pos) => {
       if (engineRef.current) {
         engineRef.current.broadcastLocalPosition(pos);
@@ -50,5 +50,5 @@ export const useLobby = () => {
         engineRef.current.broadcastChatMessage(text);
       }
     }
-  };
+  }), []);
 };
