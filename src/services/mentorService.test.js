@@ -15,6 +15,7 @@ const mockLessons = [
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 describe('mentorService', () => {
@@ -25,7 +26,9 @@ describe('mentorService', () => {
     expect(concept?.term).toBe('LCP');
   });
 
-  it('używa fallbacku, gdy endpoint AI nie jest ustawiony', async () => {
+  it('używa fallbacku, gdy klucz API nie jest ustawiony', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+
     const response = await getMentorResponse({
       input: 'wyjaśnij LCP',
       chatHistory: [],
@@ -37,10 +40,20 @@ describe('mentorService', () => {
     expect(response).toContain('LCP');
   });
 
-  it('używa odpowiedzi z API, gdy endpoint jest dostępny', async () => {
+  it('używa odpowiedzi z API, gdy klucz Gemini jest dostępny', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key');
+
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ response: 'To jest odpowiedź modelu.' }),
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: 'To jest odpowiedź modelu.' }],
+            },
+          },
+        ],
+      }),
     });
 
     vi.stubGlobal('fetch', fetchMock);
@@ -49,7 +62,6 @@ describe('mentorService', () => {
       input: 'Co to jest hydration?',
       chatHistory: [],
       lessons: mockLessons,
-      endpoint: 'https://example.com/api/mentor',
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);

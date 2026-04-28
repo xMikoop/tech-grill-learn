@@ -8,9 +8,7 @@ const Quiz = ({
   answers,
   setAnswers,
   setView,
-  addXp,
-  setCompletedModules,
-  completedModules,
+  onCompleteLesson,
 }) => {
   if (!currentLesson || !currentLesson.quizzes) return null;
   const quiz = currentLesson.quizzes[currentQuizIndex];
@@ -81,13 +79,12 @@ const Quiz = ({
                   <div className="text-green-neon text-3xl font-black italic uppercase tracking-tighter">
                     Doskonale!
                   </div>
-                  <div className="text-ghost/50 font-bold text-sm">+50 XP zasiliło Twój rdzeń</div>
+                  <div className="text-ghost/50 font-bold text-sm">Nagroda XP zostanie naliczona po ukończeniu modułu</div>
                 </div>
 
                 {currentQuizIndex < currentLesson.quizzes.length - 1 ? (
                   <button
                     onClick={() => {
-                      addXp(50);
                       setCurrentQuizIndex(currentQuizIndex + 1);
                       setAnswers({});
                     }}
@@ -97,13 +94,7 @@ const Quiz = ({
                   </button>
                 ) : (
                   <button
-                    onClick={() => {
-                      addXp(50, `Ukończono: ${currentLesson.title}`);
-                      if (!completedModules.includes(currentLesson.id)) {
-                        setCompletedModules([...completedModules, currentLesson.id]);
-                      }
-                      setView('dashboard');
-                    }}
+                    onClick={() => onCompleteLesson(currentLesson)}
                     className="w-full bg-green-neon text-void font-black py-5 rounded-2xl shadow-[0_0_30px_rgba(57,255,20,0.3)] hover:scale-[1.02] transition-all uppercase tracking-widest text-xs"
                   >
                     Zakończ Moduł i Odbierz Nagrodę
