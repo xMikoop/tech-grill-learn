@@ -14,6 +14,10 @@ export class LobbyEngine {
   init() {
     this.provider.onPlayerJoined((player) => {
       this.store.actions.upsertPlayer(player);
+      // Kluczowe: Zapisujemy pozycję startową od razu
+      if (player.position) {
+        this.store.actions.updateGhostPosition(player.uid, player.position);
+      }
     });
 
     this.provider.onPlayerLeft((uid) => {
