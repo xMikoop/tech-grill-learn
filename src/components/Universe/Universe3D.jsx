@@ -5,38 +5,53 @@ import { GhostsContainer } from './GhostsContainer';
 export const CELESTIAL_INFO = {
   sun: {
     name: 'Słońce',
+    type: 'Gwiazda typu G2V',
+    description: 'Centralna gwiazda Układu Słonecznego, stanowiąca 99,8% jego masy. To gigantyczny reaktor termojądrowy, który zasila życie na Ziemi.',
     age: '4.6 mld lat',
     comp: 'Wodór (73%), Hel (25%)',
     fact: 'Masa Słońca to 99.86% masy całego Układu Słonecznego.',
     life: 'Ok. 5 mld lat do fazy Czerwonego Olbrzyma.',
+    icon: 'Sun'
   },
   saturn: {
     name: 'Saturn',
+    type: 'Gazowy Olbrzym',
+    description: 'Druga co do wielkości planeta, znana ze swojego spektakularnego systemu pierścieni złożonych z lodu i pyłu.',
     age: '4.5 mld lat',
     comp: 'Wodór, Hel',
     fact: 'Gęstość Saturna jest mniejsza od gęstości wody – mógłby pływać w ogromnym basenie.',
     life: 'Stabilna przez miliardy lat.',
+    icon: 'Disc'
   },
   jupiter: {
     name: 'Jowisz',
+    type: 'Gazowy Olbrzym',
+    description: 'Największa planeta układu, posiadająca silne pole magnetyczne i dziesiątki księżyców. Jej Wielka Czerwona Plama to gigantyczny antycyklon.',
     age: '4.5 mld lat',
-    comp: 'Głównie Wodór i Hel (Gazowy Gigant)',
-    fact: 'Wielka Czerwona Plama to antycyklon wiejący od co najmniej 350 lat.',
+    comp: 'Głównie Wodór i Hel',
+    fact: 'Wielka Czerwona Plama wieje od co najmniej 350 lat.',
     life: 'Stabilna przez miliardy lat.',
+    icon: 'CircleDot'
   },
   earth: {
     name: 'Ziemia',
+    type: 'Planeta Skalista',
+    description: 'Nasz dom. Jedyna znana planeta, na której występuje życie i woda w stanie ciekłym na powierzchni.',
     age: '4.54 mld lat',
-    comp: 'Żelazo, Tlen, Krzem, Magnez',
-    fact: 'Jedyna planeta w Układzie Słonecznym, która nie ma nazwy pochodzącej od rzymskiego lub greckiego bóstwa.',
-    life: 'Ok. 1-2 mld lat (zanim Słońce stanie się zbyt gorące).',
+    comp: 'Żelazo, Tlen, Krzem',
+    fact: 'Jedyna planeta, której nazwa nie pochodzi od greckich lub rzymskich bóstw.',
+    life: 'Ok. 1-2 mld lat.',
+    icon: 'Globe'
   },
   black_hole: {
     name: 'Czarna Dziura',
+    type: 'Osobliwość',
+    description: 'Obszar czasoprzestrzeni, którego grawitacja jest tak silna, że nic, nawet światło, nie może go opuścić.',
     age: 'Różny',
-    comp: 'Zapadnięta Masa (Osobliwość)',
-    fact: 'Czas zwalnia w pobliżu czarnej dziury z powodu ogromnej grawitacji (dylatacja czasu).',
+    comp: 'Zapadnięta Masa',
+    fact: 'Czas zwalnia w pobliżu horyzontu zdarzeń z powodu ogromnej grawitacji.',
     life: 'Paruje przez miliardy lat (Promieniowanie Hawkinga).',
+    icon: 'Target'
   },
 };
 

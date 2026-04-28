@@ -9,6 +9,8 @@ export function buildProgressPayload({
   view,
   musicConfig,
   activeAtmosphere,
+  favorites,
+  history,
 }) {
   return {
     xp: Number.isFinite(xp) ? xp : 0,
@@ -16,6 +18,8 @@ export function buildProgressPayload({
     view: typeof view === 'string' ? view : 'dashboard',
     musicConfig: musicConfig ?? null,
     activeAtmosphere: activeAtmosphere ?? null,
+    favorites: Array.isArray(favorites) ? favorites : [],
+    history: Array.isArray(history) ? history : [],
   };
 }
 

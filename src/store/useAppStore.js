@@ -16,6 +16,8 @@ function createDefaultSessionState() {
     lastVisitDate: null,
     completedLessons: [],
     achievements: [],
+    favorites: [],
+    history: [],
   };
 }
 
@@ -55,8 +57,23 @@ export const useAppStore = create(
 
       setView: (view) => set({ view }),
       setCurrentLessonIndex: (currentLessonIndex) => set({ currentLessonIndex }),
-      setActiveAtmosphere: (activeAtmosphere) => set({ activeAtmosphere }),
+      setActiveAtmosphere: (activeAtmosphere) => {
+        console.log("Setting Atmosphere:", activeAtmosphere.name);
+        set({ activeAtmosphere });
+      },
       setMusicConfig: (musicConfig) => set({ musicConfig }),
+
+      toggleFavorite: (lessonId) => set((state) => {
+        const favorites = state.favorites.includes(lessonId)
+          ? state.favorites.filter(id => id !== lessonId)
+          : [...state.favorites, lessonId];
+        return { favorites };
+      }),
+
+      addToHistory: (lessonId) => set((state) => {
+        const history = [lessonId, ...state.history.filter(id => id !== lessonId)].slice(0, 10);
+        return { history };
+      }),
 
       unlockAchievement: (achievementId) => set((state) => {
         if (state.achievements.includes(achievementId)) return {};
@@ -123,10 +140,18 @@ export const useAppStore = create(
           return;
         }
         
+        // Anti-loop protection: don't hydrate if already done for this user
+        if (get().userId === userId && !get().isHydrating) return;
+
         set({ isHydrating: true });
         
         try {
-          const data = await loadUserProgress(userId);
+          // Timeout protection for Firebase (Max 3s)
+          const dataPromise = loadUserProgress(userId);
+          const timeoutPromise = new Promise((_, r) => setTimeout(() => r(new Error('Timeout')), 3000));
+          
+          const data = await Promise.race([dataPromise, timeoutPromise]);
+          
           if (data) {
             get().hydrateProgress({
               ...data,
@@ -134,7 +159,7 @@ export const useAppStore = create(
             });
           }
         } catch (err) {
-          console.error("Hydration failed", err);
+          console.error("Hydration failed or timed out", err);
         } finally {
           set({ userId, isHydrating: false });
         }
@@ -172,7 +197,9 @@ useAppStore.subscribe((state) => {
     state.achievements !== lastBaselineState.achievements ||
     state.view !== lastBaselineState.view ||
     state.musicConfig !== lastBaselineState.musicConfig ||
-    state.activeAtmosphere !== lastBaselineState.activeAtmosphere;
+    state.activeAtmosphere !== lastBaselineState.activeAtmosphere ||
+    state.favorites !== lastBaselineState.favorites ||
+    state.history !== lastBaselineState.history;
 
   // We only trigger save if there's a user AND data actually changed
   if (hasDataChanged && state.userId && !state.isHydrating) {
@@ -184,7 +211,9 @@ useAppStore.subscribe((state) => {
         achievements: state.achievements,
         view: state.view,
         musicConfig: state.musicConfig,
-        activeAtmosphere: state.activeAtmosphere
+        activeAtmosphere: state.activeAtmosphere,
+        favorites: state.favorites,
+        history: state.history
       }));
     }, 1000);
   }

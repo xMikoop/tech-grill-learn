@@ -92,6 +92,8 @@ const App = () => {
       {view === 'onboarding' && <Onboarding {...onboarding} />}
       {view === 'dashboard' && <Dashboard lessons={lessons} handleLessonStart={lessonMgmt.handleLessonStart} renderIcon={renderIcon} completedLessons={completedLessons} streak={streak} xp={xp} />}
       {view === 'knowledge' && <Knowledge lessons={lessons} setView={setView} />}
+      {view === 'favorites' && <Knowledge lessons={lessons} setView={setView} />}
+      {view === 'history' && <Knowledge lessons={lessons} setView={setView} />}
       {view === 'lesson' && currentLesson && <Lesson currentLesson={currentLesson} setView={setView} unlockedConcepts={lessonMgmt.unlockedConcepts} setUnlockedConcepts={lessonMgmt.setUnlockedConcepts} renderIcon={renderIcon} />}
       {view === 'quiz' && currentLesson && <Quiz currentLesson={currentLesson} currentQuizIndex={lessonMgmt.currentQuizIndex} setCurrentQuizIndex={lessonMgmt.setCurrentQuizIndex} answers={lessonMgmt.answers} setAnswers={lessonMgmt.setAnswers} setView={setView} onCompleteLesson={(l) => lessonMgmt.completeCurrentLesson(l, triggerAchievement)} />}
     </MainLayout>

@@ -17,6 +17,8 @@ describe('progressService.buildProgressPayload', () => {
       view: 'dashboard',
       musicConfig: { title: 'Ambient' },
       activeAtmosphere: { name: 'Space' },
+      favorites: [],
+      history: [],
     });
   });
 
@@ -35,6 +37,8 @@ describe('progressService.buildProgressPayload', () => {
       view: 'dashboard',
       musicConfig: null,
       activeAtmosphere: null,
+      favorites: [],
+      history: [],
     });
   });
 });
