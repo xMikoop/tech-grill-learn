@@ -40,6 +40,11 @@ export const useLobby = () => {
       if (engineRef.current) {
         engineRef.current.broadcastLocalPosition(pos);
       }
+    },
+    sendMessage: (text) => {
+      if (engineRef.current) {
+        engineRef.current.broadcastChatMessage(text);
+      }
     }
   };
 };

@@ -22,6 +22,7 @@ import Onboarding from './components/Onboarding/Onboarding';
 import AchievementPop from './components/Common/AchievementPop';
 import GlobalAudio from './components/Audio/GlobalAudio';
 import Supernova from './components/Common/Supernova';
+import { GlobalChatInput } from './components/Social/GlobalChatInput';
 
 // Pages - Lazy loaded
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -120,6 +121,7 @@ const App = () => {
       />
       <AchievementPop achievement={showAchievement} />
       <GlobalAudio />
+      <GlobalChatInput />
 
       {/* Mobile Header */}
       {view !== 'onboarding' && (

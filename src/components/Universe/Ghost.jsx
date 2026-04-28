@@ -11,6 +11,9 @@ export const Ghost = ({ uid }) => {
   // Śledzimy aktualną wyinterpolowaną pozycję
   const currentPos = useRef({ x: 0, y: 0, z: 0 });
 
+  // Subskrypcja do danych tekstowych (rzadkie zmiany - OK dla Reacta)
+  const player = useLobbyStore(state => state.players.find(p => p.uid === uid));
+
   useEffect(() => {
     let animId;
 
@@ -55,9 +58,17 @@ export const Ghost = ({ uid }) => {
            <div className="w-2 h-2 bg-plasma rounded-full animate-ping" />
         </div>
 
+        {/* Chat Bubble */}
+        {player?.lastMessage && (
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-plasma text-void text-[10px] px-2 py-1 rounded-sm font-bold whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {player.lastMessage}
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-plasma rotate-45" />
+          </div>
+        )}
+
         {/* Label */}
         <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-mono text-plasma uppercase tracking-tighter bg-void/80 px-1 py-0.5 border border-plasma/20 whitespace-nowrap">
-          GHOST_{uid.slice(0, 4)}
+          {player?.displayName || `GHOST_${uid.slice(0, 4)}`}
         </div>
       </div>
     </div>

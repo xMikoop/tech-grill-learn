@@ -41,6 +41,10 @@ export const useLobbyStore = create((set, get) => ({
       const { ghosts } = get();
       const ghost = ghosts.get(uid) || {};
       ghosts.set(uid, { ...ghost, position });
-    }
+    },
+
+    updatePlayerMessage: (uid, text) => set((state) => ({
+      players: state.players.map(p => p.uid === uid ? { ...p, lastMessage: text } : p)
+    }))
   }
 }));

@@ -27,6 +27,16 @@ export class LobbyEngine {
     this.provider.onPositionChanged((uid, position) => {
       this.store.actions.updateGhostPosition(uid, position);
     });
+
+    this.provider.onMessageReceived((uid, text) => {
+      this.store.actions.updatePlayerMessage(uid, text);
+    });
+  }
+
+  async join(lobbyId, user) {
+    // Oznaczamy lokalnego gracza w store
+    this.store.actions.upsertPlayer({ ...user, isMe: true });
+    return this.provider.join(lobbyId, user);
   }
 
   // Umożliwia wysyłanie własnej pozycji z throttlingiem
@@ -36,5 +46,14 @@ export class LobbyEngine {
       this.provider.broadcastPosition(position);
       this.lastBroadcastTime = now;
     }
+  }
+
+  // Wysyła wiadomość czatu
+  broadcastChatMessage(text) {
+    if (!text.trim()) return;
+    this.provider.broadcastMessage(text);
+    // Aktualizujemy też siebie lokalnie dla pętli feedbacku
+    const localUser = this.store.players.find(p => p.isMe); // Założenie: flaga isMe
+    // Jeśli nie mamy flagi isMe, to po prostu wysyłamy, Firebase i tak nam nie odbije
   }
 }

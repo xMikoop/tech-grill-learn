@@ -1,4 +1,4 @@
-import { ref, set, onChildAdded, onChildRemoved, onChildChanged, onDisconnect } from 'firebase/database';
+import { ref, set, update, onChildAdded, onChildRemoved, onChildChanged, onDisconnect } from 'firebase/database';
 
 /**
  * FirebaseSocialProvider
@@ -13,7 +13,8 @@ export class FirebaseSocialProvider {
     this.callbacks = {
       joined: () => {},
       left: () => {},
-      moved: () => {}
+      moved: () => {},
+      message: () => {}
     };
   }
 
@@ -46,17 +47,30 @@ export class FirebaseSocialProvider {
     onChildChanged(this.lobbyRef, (snapshot) => {
       if (snapshot.key === user.uid) return;
       const data = snapshot.val();
+      
       if (data.position) {
         this.callbacks.moved(snapshot.key, data.position);
+      }
+      
+      if (data.lastMessage) {
+        this.callbacks.message(snapshot.key, data.lastMessage);
       }
     });
   }
 
   broadcastPosition(position) {
     if (!this.userRef) return;
-    // Aktualizujemy tylko pozycję i timestamp
-    set(this.userRef, {
+    // Kluczowe: używamy update zamiast set, aby nie kasować displayName/lastMessage
+    update(this.userRef, {
       position,
+      lastSeen: Date.now()
+    });
+  }
+
+  broadcastMessage(text) {
+    if (!this.userRef) return;
+    update(this.userRef, {
+      lastMessage: text,
       lastSeen: Date.now()
     });
   }
@@ -64,6 +78,7 @@ export class FirebaseSocialProvider {
   onPlayerJoined(cb) { this.callbacks.joined = cb; }
   onPlayerLeft(cb) { this.callbacks.left = cb; }
   onPositionChanged(cb) { this.callbacks.moved = cb; }
+  onMessageReceived(cb) { this.callbacks.message = cb; }
 
   /**
    * Prywatny Adapter mapujący Snapshot Firebase na obiekt SocialPlayer.
