@@ -13,6 +13,7 @@ export class LobbyEngine {
 
   init() {
     this.provider.onPlayerJoined((player) => {
+      console.log('🌐 Player joined:', player.displayName, player.uid);
       this.store.actions.upsertPlayer(player);
       // Kluczowe: Zapisujemy pozycję startową od razu
       if (player.position) {
@@ -21,6 +22,7 @@ export class LobbyEngine {
     });
 
     this.provider.onPlayerLeft((uid) => {
+      console.log('🚪 Player left:', uid);
       this.store.actions.removePlayer(uid);
     });
 
@@ -29,6 +31,7 @@ export class LobbyEngine {
     });
 
     this.provider.onMessageReceived((uid, text) => {
+      console.log('💬 Message from', uid, ':', text);
       this.store.actions.updatePlayerMessage(uid, text);
     });
   }

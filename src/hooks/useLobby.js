@@ -23,10 +23,14 @@ export const useLobby = () => {
 
   useEffect(() => {
     if (isLoaded && user && engine) {
-      // Dołączamy do domyślnego lobby (np. 'global-universe')
+      // FIX: user object from useIdentity uses 'id', not 'uid'
+      const uid = user.id;
+      
       engine.join('global-universe', {
-        uid: user.uid,
+        uid: uid,
         displayName: user.displayName || 'Anonimowy Odkrywca'
+      }).then(() => {
+        console.log('Successfully joined lobby as:', uid);
       }).catch(err => {
         console.error('Failed to join lobby:', err);
       });
