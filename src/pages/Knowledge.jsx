@@ -2,7 +2,7 @@ import React from 'react';
 
 const Knowledge = ({ lessons, setView }) => {
   return (
-    <div className="animate-fade-in max-w-4xl mx-auto pointer-events-auto">
+    <div data-testid="knowledge-page" className="animate-fade-in max-w-4xl mx-auto pointer-events-auto">
       <header className="mb-12">
         <h2 className="text-4xl font-serif italic mb-4">Twoja Baza Wiedzy</h2>
         <p className="text-ghost/50 text-lg">Skumulowane koncepty, które udało Ci się odblokować.</p>

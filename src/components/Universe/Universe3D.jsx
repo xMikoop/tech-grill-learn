@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { GhostsContainer } from './GhostsContainer';
 
 export const CELESTIAL_INFO = {
   sun: {
@@ -138,17 +139,34 @@ const SpaceShip = React.memo(({ reducedMotion = false }) => {
   );
 });
 
-export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, reducedMotion = false }) => {
+export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, reducedMotion = false, onPositionChange }) => {
   const cameraRef = useRef(null);
   const animationRef = useRef(null);
+  const touchRef = useRef({ x: 0, y: 0, active: false });
+  const rotationRef = useRef({ x: 4, y: 12 }); // Initial rotation matching the idle animation
 
   useEffect(() => {
     if (reducedMotion) return;
 
     const updateParallax = () => {
       if (!cameraRef.current) return;
-      const rotY = gsap.getProperty(cameraRef.current, 'rotationY') || 0;
-      const rotX = gsap.getProperty(cameraRef.current, 'rotationX') || 0;
+      
+      let rotY, rotX;
+
+      if (touchRef.current.active) {
+        rotY = rotationRef.current.y;
+        rotX = rotationRef.current.x;
+        // Apply manual rotation
+        cameraRef.current.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${gsap.getProperty(cameraRef.current, 'z') || 0}px)`;
+      } else {
+        rotY = gsap.getProperty(cameraRef.current, 'rotationY') || 0;
+        rotX = gsap.getProperty(cameraRef.current, 'rotationX') || 0;
+      }
+
+      // Sync position to LobbyEngine
+      if (onPositionChange) {
+        onPositionChange([rotX, rotY, gsap.getProperty(cameraRef.current, 'z') || 0]);
+      }
 
       const radY = (rotY * Math.PI) / 180;
       const radX = (rotX * Math.PI) / 180;
@@ -221,11 +239,61 @@ export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, re
     };
   }, [active, focusedPlanet, reducedMotion]);
 
+  const handleTouchStart = (e) => {
+    if (reducedMotion) return;
+    touchRef.current.active = true;
+    touchRef.current.x = e.touches[0].clientX;
+    touchRef.current.y = e.touches[0].clientY;
+    if (animationRef.current) animationRef.current.pause();
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchRef.current.active || reducedMotion) return;
+    
+    const deltaX = e.touches[0].clientX - touchRef.current.x;
+    const deltaY = e.touches[0].clientY - touchRef.current.y;
+
+    rotationRef.current.y += deltaX * 0.2;
+    rotationRef.current.x -= deltaY * 0.2;
+
+    // Limit X rotation to avoid flipping
+    rotationRef.current.x = Math.max(-30, Math.min(30, rotationRef.current.x));
+
+    // Direct DOM update for immediate feedback
+    if (cameraRef.current) {
+      cameraRef.current.style.transform = `rotateX(${rotationRef.current.x}deg) rotateY(${rotationRef.current.y}deg) translateZ(${gsap.getProperty(cameraRef.current, 'z') || 0}px)`;
+    }
+
+    touchRef.current.x = e.touches[0].clientX;
+    touchRef.current.y = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    touchRef.current.active = false;
+    if (animationRef.current && !focusedPlanet) {
+      // Smoothly resume idle animation from current manual rotation
+      gsap.to(cameraRef.current, {
+        rotationY: rotationRef.current.y,
+        rotationX: rotationRef.current.x,
+        duration: 0,
+      });
+      animationRef.current.play();
+    }
+  };
+
   return (
-    <div className={`universe-container ${active ? 'active' : ''}`}>
+    <div 
+      className={`universe-container ${active ? 'active' : ''}`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <div ref={cameraRef} className="universe-camera">
         <StarField />
         <SpaceShip reducedMotion={reducedMotion} />
+        
+        {/* Social Ghosts Layer */}
+        <GhostsContainer />
 
         <div
           onClick={(e) => {

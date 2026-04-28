@@ -1,30 +1,47 @@
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-// Build a RAG context string from matching lessons
+const STOP_WORDS = new Set(['wyjaśnij', 'wytłumacz', 'co', 'to', 'jest', 'mi', 'proszę', 'jak', 'działa', 'dlaczego', 'czym', 'są', 'system', 'projekt', 'kod']);
+
+// Build a RAG context string from matching lessons with improved scoring
 function buildRagContext(input, lessons) {
   const lowered = input.toLowerCase();
   const terms = lowered
-    .replace(/wyjaśnij|wytłumacz|co to jest|mi|proszę|jak działa/g, '')
-    .split(/\s+/)
+    .split(/[\s,.\-?]+/)
     .map((w) => w.trim())
-    .filter((w) => w.length > 2);
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 
-  const matches = [];
+  if (terms.length === 0) return '';
+
+  const candidates = [];
 
   for (const lesson of lessons) {
     for (const concept of lesson.concepts ?? []) {
       const term = concept.term?.toLowerCase() ?? '';
       const explanation = (concept.explanation ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      const isMatch = terms.some((t) => term.includes(t) || explanation.toLowerCase().includes(t));
-      if (isMatch) {
-        matches.push(`[${lesson.title}] ${concept.term}: ${explanation.substring(0, 400)}`);
+      
+      let score = 0;
+      terms.forEach(t => {
+        if (term.includes(t)) score += 5;
+        if (explanation.toLowerCase().includes(t)) score += 1;
+      });
+
+      if (score > 0) {
+        candidates.push({
+          score,
+          text: `[${lesson.title}] ${concept.term}: ${explanation.substring(0, 500)}`
+        });
       }
     }
-    if (matches.length >= 3) break;
   }
 
-  return matches.length > 0
-    ? `Kontekst z bazy wiedzy Tech Grill Academy:\n${matches.join('\n\n')}`
+  // Sort by score and take top 3
+  const bestMatches = candidates
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(c => c.text);
+
+  return bestMatches.length > 0
+    ? `Kontekst z bazy wiedzy Tech Grill Academy:\n${bestMatches.join('\n\n')}`
     : '';
 }
 
@@ -76,6 +93,9 @@ export async function getMentorResponse({ input, chatHistory = [], lessons = [] 
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return "Limit zapytań do mentora AI został osiągnięty. Spróbuj ponownie za minutę lub sprawdź Bazę Wiedzy.";
+      }
       throw new Error(`Gemini API error: ${response.status}`);
     }
 

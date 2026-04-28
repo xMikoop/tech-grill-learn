@@ -28,36 +28,56 @@ const Sidebar = ({
   mentorLoading,
   chatEndRef,
   handleReset,
+  isOpen,
+  setIsOpen,
 }) => {
   return (
-    <aside className="w-80 h-screen glass border-r border-white/5 flex flex-col z-50 shrink-0 overflow-hidden hidden lg:flex">
-      <div className="p-6 border-b border-white/5 flex items-center justify-between pointer-events-auto">
-        <div className="flex flex-col min-w-0">
-          <h1 className="font-black text-base tracking-tighter leading-none truncate">
-            {authUser?.displayName || 'TECH GRILL'}
-          </h1>
-          <h2 className="text-plasma text-[10px] font-bold tracking-widest uppercase truncate">
-            {authUser?.email || 'Academy'}
-          </h2>
+    <>
+      {/* Mobile Overlay Backdrop */}
+      {isOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] animate-fade-in"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside className={`
+        fixed lg:static top-0 left-0 h-screen w-80 glass border-r border-white/5 flex flex-col shrink-0 overflow-hidden transition-transform duration-500 z-[1001]
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-6 border-b border-white/5 flex items-center justify-between pointer-events-auto">
+          <div className="flex flex-col min-w-0">
+            <h1 className="font-black text-base tracking-tighter leading-none truncate">
+              {authUser?.displayName || 'TECH GRILL'}
+            </h1>
+            <h2 className="text-plasma text-[10px] font-bold tracking-widest uppercase truncate">
+              {authUser?.email || 'Academy'}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg text-white/30 hover:text-plasma transition-all"
+            >
+              <Zap className="w-4 h-4 rotate-90" />
+            </button>
+            {/* Streak Badge */}
+            {streak > 0 && (
+              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400"
+                   title={`${streak}-dniowa seria!`}>
+                <Flame className="w-3.5 h-3.5 fill-orange-400" />
+                <span className="text-xs font-black">{streak}</span>
+              </div>
+            )}
+            <button
+              onClick={handleLogout}
+              title="Wyloguj"
+              className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Streak Badge */}
-          {streak > 0 && (
-            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400"
-                 title={`${streak}-dniowa seria!`}>
-              <Flame className="w-3.5 h-3.5 fill-orange-400" />
-              <span className="text-xs font-black">{streak}</span>
-            </div>
-          )}
-          <button
-            onClick={handleLogout}
-            title="Wyloguj"
-            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
 
       <div className="p-6 border-b border-white/5 pointer-events-auto">
         <div className="flex items-center gap-4 mb-4">
@@ -195,8 +215,8 @@ const Sidebar = ({
             <Zap className="w-3 h-3" /> Resetuj System AI
           </button>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

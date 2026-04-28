@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { saveUserProgress, buildProgressPayload } from '../services/progressService';
 
 function createDefaultSessionState() {
   return {
+    userId: null,
+    isHydrating: false,
     xp: 0,
     view: 'onboarding',
     currentLessonIndex: null,
@@ -11,6 +14,7 @@ function createDefaultSessionState() {
     streak: 0,
     lastVisitDate: null,
     completedLessons: [],
+    achievements: [],
   };
 }
 
@@ -53,6 +57,11 @@ export const useAppStore = create(
       setActiveAtmosphere: (activeAtmosphere) => set({ activeAtmosphere }),
       setMusicConfig: (musicConfig) => set({ musicConfig }),
 
+      unlockAchievement: (achievementId) => set((state) => {
+        if (state.achievements.includes(achievementId)) return {};
+        return { achievements: [...state.achievements, achievementId] };
+      }),
+
       setXp: (valueOrUpdater) =>
         set((state) => ({
           xp: typeof valueOrUpdater === 'function' ? valueOrUpdater(state.xp) : valueOrUpdater,
@@ -70,6 +79,7 @@ export const useAppStore = create(
             ...(Array.isArray(completedLessons)
               ? { completedLessons: normalizeCompletedLessons(completedLessons) }
               : {}),
+            ...(Array.isArray(progress.achievements) ? { achievements: progress.achievements } : {}),
             ...(progress.musicConfig ? { musicConfig: progress.musicConfig } : {}),
             ...(progress.activeAtmosphere ? { activeAtmosphere: progress.activeAtmosphere } : {}),
           };
@@ -106,6 +116,29 @@ export const useAppStore = create(
         return awarded;
       },
 
+      initializeUser: async (userId) => {
+        if (!userId) {
+          set({ userId: null, isHydrating: false });
+          return;
+        }
+        
+        set({ isHydrating: true });
+        
+        try {
+          const data = await loadUserProgress(userId);
+          if (data) {
+            get().hydrateProgress({
+              ...data,
+              view: typeof data.view === 'string' && VALID_VIEWS.has(data.view) ? data.view : undefined,
+            });
+          }
+        } catch (err) {
+          console.error("Hydration failed", err);
+        } finally {
+          set({ userId, isHydrating: false });
+        }
+      },
+
       resetSessionState: () => set(createDefaultSessionState()),
     }),
     {
@@ -120,7 +153,37 @@ export const useAppStore = create(
         streak: state.streak,
         lastVisitDate: state.lastVisitDate,
         completedLessons: state.completedLessons,
+        achievements: state.achievements,
       }),
     },
   ),
 );
+
+// Persistence Side-Effect Engine (Internal to Module)
+let saveTimeout = null;
+useAppStore.subscribe((state, prevState) => {
+  if (!state.userId) return;
+
+  // Check if relevant data changed
+  const changed = 
+    state.xp !== prevState.xp ||
+    state.completedLessons !== prevState.completedLessons ||
+    state.achievements !== prevState.achievements ||
+    state.view !== prevState.view ||
+    state.musicConfig !== prevState.musicConfig ||
+    state.activeAtmosphere !== prevState.activeAtmosphere;
+
+  if (changed) {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      saveUserProgress(state.userId, buildProgressPayload({
+        xp: state.xp,
+        completedModules: state.completedLessons,
+        achievements: state.achievements,
+        view: state.view,
+        musicConfig: state.musicConfig,
+        activeAtmosphere: state.activeAtmosphere
+      }));
+    }, 1000);
+  }
+});

@@ -87,7 +87,7 @@ const Dashboard = ({ lessons, handleLessonStart, renderIcon, completedLessons = 
   };
 
   return (
-    <div className="space-y-12 animate-fade-in pointer-events-auto max-w-6xl mx-auto">
+    <div data-testid="dashboard-page" className="space-y-12 animate-fade-in pointer-events-auto max-w-6xl mx-auto">
       {/* Header Stats Bar */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex-1 min-w-[200px]">
@@ -122,7 +122,7 @@ const Dashboard = ({ lessons, handleLessonStart, renderIcon, completedLessons = 
           <span className="w-1.5 h-1.5 rounded-full bg-plasma animate-pulse"></span>
           Drzewo Umiejętności
         </div>
-        <h1 className="text-6xl md:text-7xl font-serif italic leading-[0.85] tracking-tighter">
+        <h1 className="text-5xl md:text-7xl font-serif italic leading-[0.85] tracking-tighter">
           Twoja <span className="text-plasma">ścieżka</span>
         </h1>
         <p className="text-ghost/50 text-lg leading-relaxed">
