@@ -22,8 +22,8 @@ export function useOnboarding() {
 
   const analyzeProfile = async () => {
     setIsAnalyzing(true);
-    // Optimized: reduced from 2.5s to 800ms for snappier feel
-    await new Promise((r) => setTimeout(r, 800));
+    // Extreme optimization: 200ms is enough for "processing" feel
+    await new Promise((r) => setTimeout(r, 200));
 
     let profileKey = 'tech_motivated'; // Default
 

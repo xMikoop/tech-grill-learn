@@ -24,7 +24,7 @@ function mapFirebaseUser(firebaseUser) {
     id: firebaseUser.uid ?? '',
     displayName: firebaseUser.displayName ?? '',
     email: firebaseUser.email ?? '',
-    avatarUrl: firebaseUser.photoURL ?? '',
+    avatarUrl: firebaseUser.photoURL ?? '', // Mapowanie poprawne
   };
 }
 

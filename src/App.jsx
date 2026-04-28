@@ -21,6 +21,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Knowledge = lazy(() => import('./pages/Knowledge'));
 const Lesson = lazy(() => import('./pages/Lesson'));
 const Quiz = lazy(() => import('./pages/Quiz'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 const App = () => {
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ const App = () => {
       {view === 'knowledge' && <Knowledge lessons={lessons} setView={setView} />}
       {view === 'favorites' && <Knowledge lessons={lessons} setView={setView} />}
       {view === 'history' && <Knowledge lessons={lessons} setView={setView} />}
+      {view === 'settings' && <Settings />}
       {view === 'lesson' && currentLesson && <Lesson currentLesson={currentLesson} setView={setView} unlockedConcepts={lessonMgmt.unlockedConcepts} setUnlockedConcepts={lessonMgmt.setUnlockedConcepts} renderIcon={renderIcon} />}
       {view === 'quiz' && currentLesson && <Quiz currentLesson={currentLesson} currentQuizIndex={lessonMgmt.currentQuizIndex} setCurrentQuizIndex={lessonMgmt.setCurrentQuizIndex} answers={lessonMgmt.answers} setAnswers={lessonMgmt.setAnswers} setView={setView} onCompleteLesson={(l) => lessonMgmt.completeCurrentLesson(l, triggerAchievement)} />}
     </MainLayout>

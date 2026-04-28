@@ -55,8 +55,11 @@ export class LobbyEngine {
   broadcastChatMessage(text) {
     if (!text.trim()) return;
     this.provider.broadcastMessage(text);
-    // Aktualizujemy też siebie lokalnie dla pętli feedbacku
-    const localUser = this.store.players.find(p => p.isMe); // Założenie: flaga isMe
-    // Jeśli nie mamy flagi isMe, to po prostu wysyłamy, Firebase i tak nam nie odbije
+    
+    // Kluczowe: Aktualizujemy lokalny stan natychmiast dla pętli feedbacku
+    const localPlayer = this.store.players.find(p => p.isMe);
+    if (localPlayer) {
+      this.store.actions.updatePlayerMessage(localPlayer.uid, text);
+    }
   }
 }

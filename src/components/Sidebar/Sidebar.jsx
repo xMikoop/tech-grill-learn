@@ -46,14 +46,30 @@ const Sidebar = ({
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-6 border-b border-white/5 flex items-center justify-between pointer-events-auto">
-          <div className="flex flex-col min-w-0">
-            <h1 className="font-black text-base tracking-tighter leading-none truncate">
-              {authUser?.displayName || 'TECH GRILL'}
-            </h1>
-            <h2 className="text-plasma text-[10px] font-bold tracking-widest uppercase truncate">
-              {authUser?.email || 'Academy'}
-            </h2>
-          </div>
+          <button 
+            onClick={() => setView('settings')} // Nowy widok ustawień/atmosfery
+            className="flex items-center gap-3 min-w-0 text-left group"
+          >
+            <div className="relative shrink-0">
+              {authUser?.avatarUrl ? (
+                <img src={authUser.avatarUrl} alt="" className="w-10 h-10 rounded-full border-2 border-plasma/30 group-hover:border-plasma transition-all" />
+              ) : (
+                <div className="w-10 h-10 bg-ghost/10 rounded-full flex items-center justify-center border border-white/10 group-hover:border-plasma transition-all">
+                  <Zap className="w-4 h-4 text-ghost/50" />
+                </div>
+              )}
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-void rounded-full" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <h1 className="font-black text-sm tracking-tighter leading-none truncate group-hover:text-plasma transition-colors">
+                {authUser?.displayName || 'Odkrywca'}
+              </h1>
+              <h2 className="text-white/30 text-[10px] font-bold tracking-widest uppercase truncate">
+                Ustawienia Atmosfery
+              </h2>
+            </div>
+          </button>
+          
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setIsOpen(false)}

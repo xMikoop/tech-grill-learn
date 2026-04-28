@@ -14,6 +14,7 @@ export const VALID_VIEWS = new Set([
   'history',
   'lesson',
   'quiz',
+  'settings',
 ]);
 
 export function pathFromView(view, lessonIndex = null) {
