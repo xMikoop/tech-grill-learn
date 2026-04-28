@@ -16,6 +16,9 @@ const stableSetXp = vi.fn();
 const stableSetIsPlaying = vi.fn();
 const stableTriggerSupernova = vi.fn();
 const stableSetFocusedPlanet = vi.fn();
+const stableBroadcast = vi.fn();
+const STABLE_ATMOSPHERE = { bg: 'black', accent: 'blue' };
+const STABLE_MUSIC = {};
 
 vi.mock('../hooks/useIdentity', () => ({
   useIdentity: () => ({
@@ -72,8 +75,8 @@ vi.mock('../store/useAppStore', () => ({
     currentLessonIndex: null,
     xp: 100,
     setXp: stableSetXp,
-    activeAtmosphere: { bg: 'black', accent: 'blue' },
-    musicConfig: {},
+    activeAtmosphere: STABLE_ATMOSPHERE,
+    musicConfig: STABLE_MUSIC,
     streak: 5,
     completedLessons: [],
     hydrateProgress: stableHydrate,
@@ -90,6 +93,13 @@ vi.mock('../store/useImmersionStore', () => ({
     triggerSupernova: stableTriggerSupernova,
     focusedPlanet: null,
     setFocusedPlanet: stableSetFocusedPlanet,
+  }),
+}));
+
+vi.mock('../hooks/useLobby', () => ({
+  useLobby: () => ({
+    broadcastPosition: stableBroadcast,
+    sendMessage: vi.fn(),
   }),
 }));
 

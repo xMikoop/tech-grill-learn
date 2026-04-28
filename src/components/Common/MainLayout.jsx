@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Universe3D, CELESTIAL_INFO } from '../Universe/Universe3D';
 import Sidebar from '../Sidebar/Sidebar';
@@ -36,9 +36,9 @@ const MainLayout = ({ children, identity, lessonMgmt }) => {
     localStorage.clear();
   };
 
-  const handlePlanetClick = (p) => {
+  const handlePlanetClick = useCallback((p) => {
     setFocusedPlanet(p);
-  };
+  }, [setFocusedPlanet]);
 
   return (
     <div 

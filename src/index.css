@@ -18,6 +18,18 @@
   --animate-float-slow: float 12s ease-in-out infinite;
   --animate-drift-slow: drift 20s linear infinite;
   --animate-float-bubble: float-bubble 15s ease-in-out infinite;
+  --animate-spin-very-slow: spin 120s linear infinite;
+  --animate-shockwave: shockwave 2s ease-out forwards;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shockwave {
+  0% { transform: scale(0); opacity: 1; filter: blur(0px); }
+  100% { transform: scale(5); opacity: 0; filter: blur(50px); }
 }
 
 @keyframes drift {
@@ -79,6 +91,11 @@
 }
 
 @keyframes star-blink { from { opacity: 0.2; } to { opacity: 0.8; } }
+
+@keyframes fade-out {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
 
 /* Celestial Bodies */
 .planet {

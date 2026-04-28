@@ -73,32 +73,73 @@ const AtmosphereBubbles = React.memo(({ config }) => {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40 mix-blend-screen">
+      {/* Background Fluctuations */}
       <div 
-        className="absolute w-[150%] h-[150%] -top-1/4 -left-1/4 animate-drift-slow"
+        className="absolute w-[200%] h-[200%] -top-1/2 -left-1/2 animate-drift-slow"
         style={{
           background: `radial-gradient(circle at 30% 30%, ${config.accent}11 0%, transparent 40%),
                        radial-gradient(circle at 70% 60%, ${config.accent}22 0%, transparent 50%),
-                       radial-gradient(circle at 20% 80%, ${config.accent}11 0%, transparent 40%)`,
-          filter: 'blur(80px)',
+                       radial-gradient(circle at 40% 80%, ${config.accent}15 0%, transparent 45%)`,
+          filter: 'blur(100px)',
         }}
       />
       {/* "Milky Bubbles" */}
-      {[1, 2, 3].map((i) => (
+      {[1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
           className="absolute rounded-full animate-float-bubble"
           style={{
-            width: `${200 + i * 100}px`,
-            height: `${200 + i * 100}px`,
-            left: `${10 + i * 20}%`,
-            top: `${20 + i * 15}%`,
-            background: `radial-gradient(circle at center, ${config.accent}15 0%, transparent 70%)`,
-            filter: 'blur(40px)',
-            animationDelay: `${i * 2}s`,
-            animationDuration: `${15 + i * 5}s`,
+            width: `${150 + i * 120}px`,
+            height: `${150 + i * 120}px`,
+            left: `${(i * 25) % 100}%`,
+            top: `${(i * 35) % 100}%`,
+            background: `radial-gradient(circle at center, ${config.accent}10 0%, transparent 70%)`,
+            filter: 'blur(50px)',
+            animationDelay: `${i * 3}s`,
+            animationDuration: `${20 + i * 7}s`,
           }}
         />
       ))}
+    </div>
+  );
+});
+
+const GalaxySpiral = React.memo(({ config }) => {
+  if (!config) return null;
+  
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 overflow-hidden">
+      <div className={`relative w-[1200px] h-[1200px] ${config.animation === 'grid' ? '' : 'animate-spin-very-slow'}`}>
+        {config.animation === 'satellites' && [0, 90, 180, 270].map((angle) => (
+          <div 
+            key={angle}
+            className="absolute top-1/2 left-1/2 w-[700px] h-[250px] origin-left"
+            style={{ 
+              transform: `rotate(${angle}deg) skewX(20deg)`,
+              background: `radial-gradient(ellipse at left, ${config.accent}33 0%, transparent 80%)`,
+              filter: 'blur(80px)',
+              borderRadius: '50%',
+            }}
+          />
+        ))}
+
+        {config.animation === 'clouds' && (
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="w-full h-full rounded-full animate-pulse" 
+                  style={{ background: `radial-gradient(circle at center, ${config.accent}11 0%, transparent 70%)`, filter: 'blur(120px)' }} />
+          </div>
+        )}
+
+        {config.animation === 'grid' && (
+          <div className="absolute inset-0 opacity-30" 
+               style={{ 
+                 backgroundImage: `linear-gradient(${config.accent}22 1px, transparent 1px), linear-gradient(90deg, ${config.accent}22 1px, transparent 1px)`,
+                 backgroundSize: '100px 100px',
+                 transform: 'rotateX(60deg) translateZ(-200px)',
+                 maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
+               }} />
+        )}
+      </div>
     </div>
   );
 });
@@ -327,6 +368,7 @@ export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, re
       onTouchEnd={handleTouchEnd}
     >
       <AtmosphereBubbles config={atmosphere} />
+      <GalaxySpiral config={atmosphere} />
       <div ref={cameraRef} className="universe-camera">
         <StarField />
         <SpaceShip reducedMotion={reducedMotion} />
