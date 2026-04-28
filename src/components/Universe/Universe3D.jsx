@@ -163,9 +163,12 @@ export const Universe3D = React.memo(({ active, onPlanetClick, focusedPlanet, re
         rotX = gsap.getProperty(cameraRef.current, 'rotationX') || 0;
       }
 
-      // Sync position to LobbyEngine
+      // Sync position to LobbyEngine (Full X, Y, Z coordinates)
       if (onPositionChange) {
-        onPositionChange([rotX, rotY, gsap.getProperty(cameraRef.current, 'z') || 0]);
+        const camX = gsap.getProperty(cameraRef.current, 'x') || 0;
+        const camY = gsap.getProperty(cameraRef.current, 'y') || 0;
+        const camZ = gsap.getProperty(cameraRef.current, 'z') || 0;
+        onPositionChange([camX, camY, camZ]);
       }
 
       const radY = (rotY * Math.PI) / 180;
