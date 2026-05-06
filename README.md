@@ -1,38 +1,40 @@
 # 🛠️ Tech Grill Learn
 
-[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen?style=for-the-badge&logo=vercel)](https://tech-grill-learn.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Online-brightgreen?style=for-the-badge&logo=vercel)](https://tech-grill-learn.vercel.app/)
 
-**Profesjonalne środowisko do przygotowania do technical interview**  
-w obszarze **AI Marketing + Senior Frontend Development**.
+**Professional sandbox for Senior Frontend & AI Marketing technical interviews.**
 
 ---
 
-## ✨ Co to jest?
+## ✨ What is Tech Grill Academy?
 
-**Tech Grill Academy** to realistyczny sandbox, w którym trenujesz dokładnie te rzeczy, które padają na rozmowach rekrutacyjnych senior+ w 2026:
+**Tech Grill Learn** is a realistic training environment designed to help you practice the exact challenges faced in senior-level technical interviews in 2026.
 
-- **Performance & Core Web Vitals** (LCP, CLS, INP, TBT)
-- **AI Integration** (OpenAI / Claude / streaming responses)
-- **Modern Frontend** (Vite + Tailwind + TypeScript + responsive design)
-- Real-world coding & architecture challenges
+Focus areas include:
+- Core Web Vitals & Performance Optimization
+- AI Integration (OpenAI, Claude, streaming responses, prompt engineering)
+- Modern Frontend Development (Vite + Tailwind + TypeScript)
+- Real-world coding and architecture questions
 
 ---
 
 ## 🚀 Live Demo
 
-[Otwórz Tech Grill Learn →](https://tech-grill-learn.vercel.app/)
+[→ Open Tech Grill Learn](https://tech-grill-learn.vercel.app/)
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Vite** — ultra-szybki dev + build
-- **TypeScript**
-- **Tailwind CSS** — nowoczesne, responsywne UI
+| Technology      | Version | Purpose                              |
+|-----------------|---------|--------------------------------------|
+| **Vite**        | Latest  | Blazing-fast development & builds    |
+| **TypeScript**  | 5.x     | End-to-end type safety               |
+| **Tailwind CSS**| Latest  | Rapid, responsive UI development     |
 
 ---
 
-## 🏗️ Jak uruchomić lokalnie?
+## 🏗️ Getting Started
 
 ```bash
 git clone https://github.com/xMikoop/tech-grill-learn.git
@@ -41,19 +43,20 @@ npm install
 npm run dev
 ```
 
-Otwórz http://localhost:5173
+Open [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 📋 Co znajdziesz w środku?
+## 📋 Key Features
 
-- Symulacje rzeczywistych zadań technicznych
-- AI mock interview / integracje
-- Performance optimization challenges
-- Czysta, nowoczesna architektura frontendowa
+- Realistic mock technical interview challenges
+- AI-powered modules with prompt engineering and API integration
+- Performance dashboard with Core Web Vitals metrics
+- Fully responsive components with dark mode
+- Clean, well-documented project architecture
 
-Repo wyczyszczone i przygotowane jako mocne portfolio piece.
+Built as a practical portfolio piece and interview preparation tool in April–May 2026.
 
 ---
 
-*Made with 🔥 by xMikoop*
+Made with 🔥 for developers leveling up fast.
