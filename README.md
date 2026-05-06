@@ -1,26 +1,62 @@
 # 🛠️ Tech Grill Learn
 
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen?style=for-the-badge&logo=vercel)](https://tech-grill-learn.vercel.app/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A professional preparation environment for technical interviews in the AI Marketing & Frontend Development space. 
-
-## 🚀 Live Environment
-The project is deployed and accessible at: **[https://tech-grill-learn.vercel.app/](https://tech-grill-learn.vercel.app/)**
-
-This project is a sandbox designed to practice modern technical challenges, specifically focusing on:
-- **Next.js & Performance:** Core Web Vitals optimization and Server Side Rendering.
-- **AI Integrations:** Securely connecting with OpenAI/Claude APIs.
-- **Frontend Mastery:** Tailwind CSS and responsive design patterns.
-
-## 🛠️ Tech Stack
-- **Framework:** [Vite](https://vitejs.dev/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Language:** TypeScript / JavaScript
-
-## 🏗️ Getting Started
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Run dev server: `npm run dev`
+**Profesjonalne środowisko do przygotowania do technical interview**  
+w obszarze **AI Marketing + Senior Frontend Development**.
 
 ---
-*Note: This environment was used to simulate and prepare for complex technical reviews in April 2026.*
+
+## ✨ Co to jest?
+
+**Tech Grill Academy** to realistyczny sandbox, w którym trenujesz dokładnie te rzeczy, które padają na rozmowach rekrutacyjnych senior+ w 2026:
+
+- **Performance & Core Web Vitals** (LCP, CLS, INP, TBT)
+- **AI Integration** (OpenAI / Claude / streaming responses)
+- **Modern Frontend** (Vite + Tailwind + TypeScript + responsive design)
+- **Interview Challenges** (real-world coding & architecture questions)
+
+---
+
+## 🚀 Live Demo
+
+[Otwórz Tech Grill Learn →](https://tech-grill-learn.vercel.app/)
+
+---
+
+## 🛠️ Tech Stack
+
+| Technologia     | Cel w projekcie                  |
+|-----------------|----------------------------------|
+| **Vite**        | błyskawiczny dev + build        |
+| **TypeScript**  | typowanie end-to-end             |
+| **Tailwind CSS**| ultra-szybkie, responsywne UI   |
+
+---
+
+## 🏗️ Jak uruchomić lokalnie?
+
+```bash
+git clone https://github.com/xMikoop/tech-grill-learn.git
+cd tech-grill-learn
+npm install
+npm run dev
+```
+
+Otwórz [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 📋 Co znajdziesz w środku?
+
+- Symulacje rzeczywistych zadań rekrutacyjnych
+- Gotowe moduły AI (prompt engineering + API calls)
+- Challenge performance (Core Web Vitals dashboard)
+- Responsywne komponenty + dark mode
+
+**Ostatnio używany do przygotowania na rozmowy w kwietniu/maju 2026.**
+
+---
+
+Repozytorium wyczyszczone i przygotowane do pokazania rekruterom.
