@@ -1,7 +1,6 @@
 # 🛠️ Tech Grill Learn
 
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen?style=for-the-badge&logo=vercel)](https://tech-grill-learn.vercel.app/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Profesjonalne środowisko do przygotowania do technical interview**  
 w obszarze **AI Marketing + Senior Frontend Development**.
@@ -15,7 +14,7 @@ w obszarze **AI Marketing + Senior Frontend Development**.
 - **Performance & Core Web Vitals** (LCP, CLS, INP, TBT)
 - **AI Integration** (OpenAI / Claude / streaming responses)
 - **Modern Frontend** (Vite + Tailwind + TypeScript + responsive design)
-- **Interview Challenges** (real-world coding & architecture questions)
+- Real-world coding & architecture challenges
 
 ---
 
@@ -27,11 +26,9 @@ w obszarze **AI Marketing + Senior Frontend Development**.
 
 ## 🛠️ Tech Stack
 
-| Technologia     | Cel w projekcie                  |
-|-----------------|----------------------------------|
-| **Vite**        | błyskawiczny dev + build        |
-| **TypeScript**  | typowanie end-to-end             |
-| **Tailwind CSS**| ultra-szybkie, responsywne UI   |
+- **Vite** — ultra-szybki dev + build
+- **TypeScript**
+- **Tailwind CSS** — nowoczesne, responsywne UI
 
 ---
 
@@ -44,19 +41,19 @@ npm install
 npm run dev
 ```
 
-Otwórz [http://localhost:5173](http://localhost:5173)
+Otwórz http://localhost:5173
 
 ---
 
 ## 📋 Co znajdziesz w środku?
 
-- Symulacje rzeczywistych zadań rekrutacyjnych
-- Gotowe moduły AI (prompt engineering + API calls)
-- Challenge performance (Core Web Vitals dashboard)
-- Responsywne komponenty + dark mode
+- Symulacje rzeczywistych zadań technicznych
+- AI mock interview / integracje
+- Performance optimization challenges
+- Czysta, nowoczesna architektura frontendowa
 
-**Ostatnio używany do przygotowania na rozmowy w kwietniu/maju 2026.**
+Repo wyczyszczone i przygotowane jako mocne portfolio piece.
 
 ---
 
-Repozytorium wyczyszczone i przygotowane do pokazania rekruterom.
+*Made with 🔥 by xMikoop*
